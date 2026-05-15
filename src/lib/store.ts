@@ -14,6 +14,7 @@ export interface Transaction {
   asset: string;
   amount: string;
   status: 'confirmed' | 'pending' | 'failed';
+  memo: string;
   timestamp: number;
 }
 export interface SystemSettings {
@@ -23,6 +24,9 @@ export interface SystemSettings {
   // Blockchain State
   networkMode: 'testnet' | 'mainnet';
   activeTonAddress: string;
+  activeTonUsdtAddress: string;
+  tonMainnetUsdtAddress: string;
+  tonTestnetUsdtAddress: string;
   tonApiUrl: string;
 }
 interface AppState {
@@ -53,7 +57,10 @@ export const useStore = create<AppState>()(
         maxTierLimit: 10000,
         networkMode: 'testnet',
         activeTonAddress: '',
-        tonApiUrl: ''
+        activeTonUsdtAddress: '',
+        tonMainnetUsdtAddress: '',
+        tonTestnetUsdtAddress: '',
+        tonApiUrl: '',
       },
       setAuth: (user, token) => {
         set({ user, token, isAuthenticated: true });
@@ -71,7 +78,10 @@ export const useStore = create<AppState>()(
                 ...state.settings,
                 networkMode: json.data.networkMode,
                 activeTonAddress: json.data.activeTonAddress,
-                tonApiUrl: json.data.tonApiUrl
+                activeTonUsdtAddress: json.data.activeTonUsdtAddress,
+                tonMainnetUsdtAddress: json.data.tonMainnetUsdtAddress,
+                tonTestnetUsdtAddress: json.data.tonTestnetUsdtAddress,
+                tonApiUrl: json.data.tonApiUrl,
               }
             }));
           }

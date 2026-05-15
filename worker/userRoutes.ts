@@ -67,7 +67,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
             data: {
                 networkMode: settings.networkMode,
                 activeTonAddress: settings.networkMode === 'mainnet' ? settings.tonMainnetAddress : settings.tonTestnetAddress,
-                tonApiUrl: settings.tonApiUrl
+                activeTonUsdtAddress: settings.networkMode === 'mainnet' ? settings.tonMainnetUsdtAddress : settings.tonTestnetUsdtAddress,
+                tonApiUrl: settings.tonApiUrl,
             }
         });
     });

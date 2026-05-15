@@ -106,6 +106,7 @@ export function AdminDashboard() {
                       <TableHead className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest">TXID</TableHead>
                       <TableHead className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Plan</TableHead>
                       <TableHead className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Asset</TableHead>
+                      <TableHead className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Invoice/Memo</TableHead>
                       <TableHead className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest text-right">Timestamp</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -122,6 +123,7 @@ export function AdminDashboard() {
                           <TableCell className="font-mono text-xs text-primary font-bold">{tx.id.slice(0, 12)}...</TableCell>
                           <TableCell className="font-medium text-foreground">{tx.planName}</TableCell>
                           <TableCell className="font-bold text-foreground">{tx.asset}</TableCell>
+                          <TableCell className="font-mono text-[10px] font-bold text-cyan-600 dark:text-cyan-400">{tx.memo}</TableCell>
                           <TableCell className="text-right text-muted-foreground text-xs font-medium">
                             {format(tx.timestamp, 'MMM d, HH:mm:ss')}
                           </TableCell>

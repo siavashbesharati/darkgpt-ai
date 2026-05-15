@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Save, Globe, Key, AlertTriangle, RefreshCcw, Wallet, Network } from 'lucide-react';
+import { Save, Globe, Key, AlertTriangle, RefreshCcw, Wallet, Network, Coins } from 'lucide-react';
 import { toast } from 'sonner';
 import { useStore } from '@/lib/store';
 export function ConfigPanel() {
@@ -16,6 +16,8 @@ export function ConfigPanel() {
     networkMode: 'testnet',
     tonMainnetAddress: '',
     tonTestnetAddress: '',
+    tonMainnetUsdtAddress: '',
+    tonTestnetUsdtAddress: '',
     tonApiUrl: ''
   });
   const [loading, setLoading] = useState(false);
@@ -111,8 +113,8 @@ export function ConfigPanel() {
                 <Label className="text-base font-bold">Network Mode</Label>
                 <p className="text-xs text-muted-foreground">Switching to Mainnet enables real-value transactions.</p>
               </div>
-              <RadioGroup 
-                value={config.networkMode} 
+              <RadioGroup
+                value={config.networkMode}
                 onValueChange={(val) => setConfig({ ...config, networkMode: val as 'testnet' | 'mainnet' })}
                 className="flex items-center gap-4"
               >
@@ -126,36 +128,65 @@ export function ConfigPanel() {
                 </div>
               </RadioGroup>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              <div className="space-y-6">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                  <Wallet className="w-3.5 h-3.5" /> Destination Wallets
+                  <Wallet className="w-3.5 h-3.5" /> Native TON Wallets
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-[10px] text-muted-foreground font-bold">MAINNET WALLET</Label>
-                  <Input
-                    value={config.tonMainnetAddress}
-                    onChange={(e) => setConfig({ ...config, tonMainnetAddress: e.target.value })}
-                    className="bg-background border-border font-mono text-xs"
-                    placeholder="EQ..."
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[10px] text-muted-foreground font-bold">TESTNET WALLET</Label>
-                  <Input
-                    value={config.tonTestnetAddress}
-                    onChange={(e) => setConfig({ ...config, tonTestnetAddress: e.target.value })}
-                    className="bg-background border-border font-mono text-xs"
-                    placeholder="EQ..."
-                  />
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] text-muted-foreground font-bold">MAINNET TON</Label>
+                    <Input
+                      value={config.tonMainnetAddress}
+                      onChange={(e) => setConfig({ ...config, tonMainnetAddress: e.target.value })}
+                      className="bg-background border-border font-mono text-xs"
+                      placeholder="EQ..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] text-muted-foreground font-bold">TESTNET TON</Label>
+                    <Input
+                      value={config.tonTestnetAddress}
+                      onChange={(e) => setConfig({ ...config, tonTestnetAddress: e.target.value })}
+                      className="bg-background border-border font-mono text-xs"
+                      placeholder="EQ..."
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                  <Globe className="w-3.5 h-3.5" /> Node / API Endpoints
+                  <Coins className="w-3.5 h-3.5" /> USDT Jetton Wallets
                 </div>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] text-muted-foreground font-bold text-cyan-500">MAINNET USDT</Label>
+                    <Input
+                      value={config.tonMainnetUsdtAddress}
+                      onChange={(e) => setConfig({ ...config, tonMainnetUsdtAddress: e.target.value })}
+                      className="bg-background border-border font-mono text-xs"
+                      placeholder="EQ..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] text-muted-foreground font-bold text-cyan-500">TESTNET USDT</Label>
+                    <Input
+                      value={config.tonTestnetUsdtAddress}
+                      onChange={(e) => setConfig({ ...config, tonTestnetUsdtAddress: e.target.value })}
+                      className="bg-background border-border font-mono text-xs"
+                      placeholder="EQ..."
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                <Globe className="w-3.5 h-3.5" /> Platform Health & API
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-2">
-                  <Label className="text-[10px] text-muted-foreground font-bold uppercase">TonAPI URL (tonapi.io)</Label>
+                  <Label className="text-[10px] text-muted-foreground font-bold uppercase">TonAPI Explorer URL</Label>
                   <Input
                     value={config.tonApiUrl}
                     onChange={(e) => setConfig({ ...config, tonApiUrl: e.target.value })}

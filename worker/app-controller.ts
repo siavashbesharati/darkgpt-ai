@@ -19,16 +19,20 @@ export interface AppSettings {
   networkMode: 'testnet' | 'mainnet';
   tonMainnetAddress: string;
   tonTestnetAddress: string;
+  tonMainnetUsdtAddress: string;
+  tonTestnetUsdtAddress: string;
   tonApiUrl: string;
 }
 export class AppController extends DurableObject<Env> {
   private users = new Map<string, User>();
   private sessions = new Map<string, SessionInfo>();
-  private settings: AppSettings = { 
+  private settings: AppSettings = {
     maintenanceMode: false,
     networkMode: 'testnet',
     tonMainnetAddress: '',
-    tonTestnetAddress: 'EQBvW8ZVMYMv-7s6R8e74q8D-Y_R8Z-R8Z-R8Z-R8Z-R8Z-R8', // Placeholder Testnet Address
+    tonTestnetAddress: 'EQBvW8ZVMYMv-7s6R8e74q8D-Y_R8Z-R8Z-R8Z-R8Z-R8Z-R8',
+    tonMainnetUsdtAddress: '',
+    tonTestnetUsdtAddress: 'EQBvW8ZVMYMv-7s6R8e74q8D-Y_R8Z-R8Z-R8Z-R8Z-R8Z-R8',
     tonApiUrl: 'https://testnet.tonapi.io'
   };
   private otps = new Map<string, { code: string; expires: number }>();
