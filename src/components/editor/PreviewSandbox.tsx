@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 interface PreviewSandboxProps {
@@ -9,7 +9,7 @@ export function PreviewSandbox({ code, language }: PreviewSandboxProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const generateSrcDoc = () => {
+  const generateSrcDoc = useCallback(() => {
     try {
       if (language === 'html' || language === 'xml') {
         if (code.includes('<html') || code.includes('<body')) {
@@ -66,17 +66,17 @@ export function PreviewSandbox({ code, language }: PreviewSandboxProps) {
       setError(String(err));
       return '';
     }
-  };
-  const refresh = () => {
+  }, [code, language]);
+  const refresh = useCallback(() => {
     setIsLoading(true);
     setError(null);
     if (iframeRef.current) {
       iframeRef.current.srcdoc = generateSrcDoc();
     }
-  };
+  }, [generateSrcDoc]);
   useEffect(() => {
     refresh();
-  }, [code, language]);
+  }, [refresh]);
   return (
     <div className="relative w-full h-full bg-white overflow-hidden flex flex-col">
       <div className="absolute top-2 right-2 z-10 flex gap-2">
