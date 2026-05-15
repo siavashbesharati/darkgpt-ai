@@ -58,6 +58,20 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const success = await controller.consumeCredits(userId, 1);
         return c.json({ success });
     });
+    // Public Payment Config
+    app.get('/api/config/payment', async (c) => {
+        const controller = getAppController(c.env);
+        const settings = await controller.getSettings();
+        return c.json({
+            success: true,
+            data: {
+                networkMode: settings.networkMode,
+                activeTonAddress: settings.networkMode === 'mainnet' ? settings.tonMainnetAddress : settings.tonTestnetAddress,
+                tonApiUrl: settings.tonApiUrl
+            }
+        });
+    });
+    // Admin Routes
     app.get('/api/admin/users', async (c) => {
         const controller = getAppController(c.env);
         const users = await controller.listUsers();
@@ -92,6 +106,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         if (!userId) return c.json({ success: false, error: 'Unauthorized' }, 401);
         const { tier, credits } = await c.req.json();
         const controller = getAppController(c.env);
+        // Log environment for audit
+        const settings = await controller.getSettings();
+        console.log(`[PAYMENT] Upgrade to ${tier} for user ${userId} on ${settings.networkMode}`);
         await controller.upgradeUser(userId, tier, credits);
         return c.json({ success: true });
     });

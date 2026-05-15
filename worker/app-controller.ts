@@ -15,11 +15,22 @@ export interface AppSettings {
   aiApiKey?: string;
   emailApiKey?: string;
   maintenanceMode: boolean;
+  // Blockchain Orchestration
+  networkMode: 'testnet' | 'mainnet';
+  tonMainnetAddress: string;
+  tonTestnetAddress: string;
+  tonApiUrl: string;
 }
 export class AppController extends DurableObject<Env> {
   private users = new Map<string, User>();
   private sessions = new Map<string, SessionInfo>();
-  private settings: AppSettings = { maintenanceMode: false };
+  private settings: AppSettings = { 
+    maintenanceMode: false,
+    networkMode: 'testnet',
+    tonMainnetAddress: '',
+    tonTestnetAddress: 'EQBvW8ZVMYMv-7s6R8e74q8D-Y_R8Z-R8Z-R8Z-R8Z-R8Z-R8', // Placeholder Testnet Address
+    tonApiUrl: 'https://testnet.tonapi.io'
+  };
   private otps = new Map<string, { code: string; expires: number }>();
   private loaded = false;
   constructor(ctx: DurableObjectState, env: Env) {
@@ -34,7 +45,9 @@ export class AppController extends DurableObject<Env> {
       ]);
       this.users = new Map(Object.entries(u || {}));
       this.sessions = new Map(Object.entries(s || {}));
-      this.settings = set || { maintenanceMode: false };
+      if (set) {
+        this.settings = { ...this.settings, ...set };
+      }
       this.loaded = true;
     }
   }

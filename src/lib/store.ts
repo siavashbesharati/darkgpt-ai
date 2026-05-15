@@ -20,6 +20,10 @@ export interface SystemSettings {
   freeTierLimit: number;
   proTierLimit: number;
   maxTierLimit: number;
+  // Blockchain State
+  networkMode: 'testnet' | 'mainnet';
+  activeTonAddress: string;
+  tonApiUrl: string;
 }
 interface AppState {
   user: User | null;
@@ -30,16 +34,12 @@ interface AppState {
   setAuth: (user: User, token: string) => void;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  fetchPublicConfig: () => Promise<void>;
   consumeCredit: () => Promise<boolean>;
   addTransaction: (tx: Transaction) => void;
   upgradeTier: (tier: Tier) => Promise<void>;
   updateSettings: (settings: Partial<SystemSettings>) => void;
 }
-/**
- * NOTE: Primary credit consumption occurs on the backend AI Agent (worker/agent.ts)
- * during chat requests to prevent bypass. consumeCredit action here is used for 
- * manual synchronization or UI-driven usage tracking.
- */
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -51,12 +51,34 @@ export const useStore = create<AppState>()(
         freeTierLimit: 10,
         proTierLimit: 1000,
         maxTierLimit: 10000,
+        networkMode: 'testnet',
+        activeTonAddress: '',
+        tonApiUrl: ''
       },
       setAuth: (user, token) => {
         set({ user, token, isAuthenticated: true });
         if (token) get().refreshUser();
+        get().fetchPublicConfig();
       },
       logout: () => set({ user: null, token: null, isAuthenticated: false }),
+      fetchPublicConfig: async () => {
+        try {
+          const res = await fetch('/api/config/payment');
+          const json = await res.json();
+          if (json.success && json.data) {
+            set((state) => ({
+              settings: {
+                ...state.settings,
+                networkMode: json.data.networkMode,
+                activeTonAddress: json.data.activeTonAddress,
+                tonApiUrl: json.data.tonApiUrl
+              }
+            }));
+          }
+        } catch (e) {
+          console.warn('Failed to fetch public blockchain config', e);
+        }
+      },
       refreshUser: async () => {
         const token = get().token;
         if (!token) return;
@@ -117,6 +139,20 @@ export const useStore = create<AppState>()(
         settings: { ...state.settings, ...newSettings }
       })),
     }),
-    { name: 'aethercode-storage' }
+    { 
+      name: 'aethercode-storage',
+      // Ensure we don't persist transient public config
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+        isAuthenticated: state.isAuthenticated,
+        transactions: state.transactions,
+        settings: {
+          freeTierLimit: state.settings.freeTierLimit,
+          proTierLimit: state.settings.proTierLimit,
+          maxTierLimit: state.settings.maxTierLimit
+        }
+      })
+    }
   )
 );
