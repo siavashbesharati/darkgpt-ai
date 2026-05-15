@@ -42,6 +42,9 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
   }, [onStreamUpdate]);
   useEffect(() => {
     if (!token) return;
+    if (chatService.getSessionId() !== token) {
+      chatService.switchSession(token);
+    }
     const loadHistory = async () => {
       const res = await chatService.getMessages(token);
       if (res.success && res.data?.messages) {
@@ -59,7 +62,7 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
       scrollRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, []);
-  useEffect(scrollToBottom, [messages, isLoading, scrollToBottom]);
+  useEffect(scrollToBottom, [scrollToBottom, messages, isLoading]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
