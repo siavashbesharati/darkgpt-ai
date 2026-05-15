@@ -1,37 +1,35 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Loader2, RefreshCw, AlertCircle, Maximize2, Copy, Terminal } from 'lucide-react';
+import React, { useEffect, useRef, useState, useCallback, memo } from 'react';
+import { Loader2, RefreshCw, Maximize2, Copy, Terminal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 interface PreviewSandboxProps {
   code: string;
   language: string;
 }
-export function PreviewSandbox({ code, language }: PreviewSandboxProps) {
+export const PreviewSandbox = memo(function PreviewSandbox({ code, language }: PreviewSandboxProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const generateSrcDoc = useCallback(() => {
     try {
-      if (language === 'html' || language === 'xml' || language === 'svg') {
+      if (['html', 'xml', 'svg'].includes(language)) {
         const hasFullStructure = code.includes('<html') || code.includes('<body');
         if (hasFullStructure) return code;
         return `
           <!DOCTYPE html>
-          <html lang="en">
+          <html>
           <head>
             <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <script src="https://cdn.tailwindcss.com"></script>
             <style>
-              body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 24px; background: white; color: #0f172a; min-height: 100vh; }
-              * { box-sizing: border-box; }
+              body { margin: 0; padding: 24px; background: white; color: #0f172a; min-height: 100vh; font-family: sans-serif; }
             </style>
           </head>
           <body>${code}</body>
           </html>
         `;
       }
-      if (language === 'javascript' || language === 'typescript' || language === 'jsx' || language === 'tsx') {
+      if (['javascript', 'typescript', 'jsx', 'tsx', 'js', 'ts'].includes(language)) {
         return `
           <!DOCTYPE html>
           <html>
@@ -46,17 +44,13 @@ export function PreviewSandbox({ code, language }: PreviewSandboxProps) {
           <body>
             <div id="root"></div>
             <script type="module">
-              const log = (msg) => { console.log('[Aether Preview]', msg); };
               try {
                 ${code}
               } catch (err) {
                 const root = document.getElementById('root');
-                root.innerHTML = \`<div style="padding: 32px; font-family: monospace;">
-                  <div style="color: #ef4444; border-bottom: 2px solid #fee2e2; padding-bottom: 12px; margin-bottom: 20px;">
-                    <h3 style="margin: 0; font-size: 18px;">Runtime Exception</h3>
-                  </div>
-                  <pre style="background: #fef2f2; color: #b91c1c; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 13px;">\${err.stack || err.message}</pre>
-                  <p style="color: #64748b; font-size: 12px; margin-top: 24px;">Check the developer console for more detailed stack traces.</p>
+                root.innerHTML = \`<div style="padding: 32px; font-family: monospace; color: #ef4444; background: #fef2f2; border: 1px solid #fee2e2; border-radius: 8px;">
+                  <h3 style="margin: 0 0 16px 0;">Runtime Error</h3>
+                  <pre style="white-space: pre-wrap; font-size: 13px;">\${err.stack || err.message}</pre>
                 </div>\`;
               }
             </script>
@@ -64,20 +58,9 @@ export function PreviewSandbox({ code, language }: PreviewSandboxProps) {
           </html>
         `;
       }
-      return `
-        <!DOCTYPE html>
-        <html>
-        <body style="display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; color: #94a3b8; background: #f8fafc; text-align: center;">
-          <div>
-            <p style="font-size: 14px;">Preview not supported for <b>${language}</b></p>
-            <p style="font-size: 12px; opacity: 0.7;">Try generating HTML or React code.</p>
-          </div>
-        </body>
-        </html>
-      `;
+      return `<!DOCTYPE html><html><body style="display:flex;align-items:center;justify-content:center;height:100vh;color:#94a3b8;font-family:sans-serif">Preview not available for ${language}</body></html>`;
     } catch (err) {
-      setError(String(err));
-      return '';
+      return `<!DOCTYPE html><html><body>Error generating preview</body></html>`;
     }
   }, [code, language]);
   const refresh = useCallback(() => {
@@ -88,7 +71,8 @@ export function PreviewSandbox({ code, language }: PreviewSandboxProps) {
     }
   }, [generateSrcDoc]);
   useEffect(() => {
-    refresh();
+    const timer = setTimeout(refresh, 500); // Debounce for streaming
+    return () => clearTimeout(timer);
   }, [refresh]);
   const copySrc = () => {
     navigator.clipboard.writeText(generateSrcDoc());
@@ -125,27 +109,11 @@ export function PreviewSandbox({ code, language }: PreviewSandboxProps) {
           size="icon"
           className="h-8 w-8 bg-white/90 backdrop-blur border border-slate-200 shadow-sm hover:bg-white"
           onClick={refresh}
-          title="Refresh"
+          title="Reset & Refresh"
         >
           <RefreshCw className={`w-3.5 h-3.5 text-slate-600 ${isLoading ? 'animate-spin' : ''}`} />
         </Button>
       </div>
-      {error && (
-        <div className="absolute inset-0 z-40 flex items-center justify-center bg-white p-8">
-          <div className="max-w-md w-full bg-red-50 border border-red-100 p-6 rounded-2xl space-y-4">
-            <div className="flex items-center gap-3 text-red-600">
-              <Terminal className="w-6 h-6" />
-              <h3 className="font-bold text-lg">Compilation Failure</h3>
-            </div>
-            <div className="bg-slate-900 rounded-lg p-4 font-mono text-xs text-red-400 overflow-x-auto">
-              {error}
-            </div>
-            <Button onClick={refresh} variant="outline" className="w-full border-red-200 text-red-600 hover:bg-red-100">
-              Retry Render
-            </Button>
-          </div>
-        </div>
-      )}
       <iframe
         ref={iframeRef}
         title="preview-sandbox"
@@ -163,4 +131,4 @@ export function PreviewSandbox({ code, language }: PreviewSandboxProps) {
       )}
     </div>
   );
-}
+});

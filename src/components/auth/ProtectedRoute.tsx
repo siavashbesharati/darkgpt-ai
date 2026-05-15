@@ -8,23 +8,30 @@ interface ProtectedRouteProps {
   adminOnly?: boolean;
 }
 export function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
-  // Zustand Zero-Tolerance Rule: Select primitives individually
   const isAuthenticated = useStore(s => s.isAuthenticated);
   const userIsAdmin = useStore(s => s.user?.isAdmin ?? false);
   const userExists = useStore(s => !!s.user);
   const token = useStore(s => s.token);
   const [showAuth, setShowAuth] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const location = useLocation();
   useEffect(() => {
-    if (!isAuthenticated && !token) {
-      setShowAuth(true);
-    }
+    // Brief delay to allow hydration/refresh to settle
+    const timer = setTimeout(() => {
+      setIsInitializing(false);
+      if (!isAuthenticated && !token) {
+        setShowAuth(true);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
   }, [isAuthenticated, token]);
-  // If we have a token but user data hasn't refreshed yet, show loader
-  if (token && !userExists) {
+  if (isInitializing || (token && !userExists)) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-slate-950">
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-950 gap-4">
         <Loader2 className="w-10 h-10 text-cyan-500 animate-spin" />
+        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest animate-pulse">
+          Authenticating Session
+        </span>
       </div>
     );
   }

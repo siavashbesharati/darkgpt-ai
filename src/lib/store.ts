@@ -60,13 +60,13 @@ export const useStore = create<AppState>()(
             headers: { 'Authorization': token }
           });
           const json = await res.json();
-          if (json.success) {
+          if (json.success && json.data) {
             set({ user: json.data });
           } else if (res.status === 401 || res.status === 404) {
             set({ user: null, token: null, isAuthenticated: false });
           }
         } catch (e) {
-          console.error('Failed to refresh user', e);
+          console.warn('Backend unavailable, using cached user data', e);
         }
       },
       consumeCredit: async () => {
@@ -79,7 +79,7 @@ export const useStore = create<AppState>()(
           });
           const json = await res.json();
           if (json.success) {
-            await get().refreshUser();
+            await get().refreshUser(); // Sync state
             return true;
           }
           return false;
@@ -96,12 +96,14 @@ export const useStore = create<AppState>()(
         if (!token) return;
         const credits = tier === 'Pro' ? 1000 : 10000;
         try {
-          await fetch('/api/upgrade', {
+          const res = await fetch('/api/upgrade', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': token },
             body: JSON.stringify({ tier, credits })
           });
-          await get().refreshUser();
+          if (res.ok) {
+            await get().refreshUser();
+          }
         } catch (e) {
           console.error('Upgrade failed', e);
         }

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { AppLayout } from '@/components/layout/AppLayout';
+import { Navbar } from '@/components/layout/Navbar';
 import { ChatInterface } from '@/components/editor/ChatInterface';
 import { CodeViewer } from '@/components/editor/CodeViewer';
 import { extractLatestCodeBlock, ExtractedCode } from '@/lib/code-extractor';
 import { Toaster } from '@/components/ui/sonner';
 import { Button } from '@/components/ui/button';
-import { Save, Share2, ChevronRight } from 'lucide-react';
+import { Save, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 export function EditorPage() {
   const [streamingText, setStreamingText] = useState("");
@@ -23,9 +24,10 @@ export function EditorPage() {
     });
   };
   return (
-    <AppLayout className="bg-slate-950">
-      <div className="flex flex-col h-full overflow-hidden">
-        <main className="flex-1 overflow-hidden border-t border-white/5">
+    <AppLayout className="bg-slate-950 overflow-hidden">
+      <div className="flex flex-col h-screen overflow-hidden">
+        <Navbar showTrigger />
+        <main className="flex-1 overflow-hidden">
           <ResizablePanelGroup direction="horizontal" className="h-full">
             <ResizablePanel defaultSize={40} minSize={30} className="flex flex-col">
               <ChatInterface onStreamUpdate={setStreamingText} />
@@ -33,18 +35,18 @@ export function EditorPage() {
             <ResizableHandle withHandle className="w-1 bg-white/5 hover:bg-cyan-500/40 transition-colors" />
             <ResizablePanel defaultSize={60} minSize={40} className="flex flex-col relative">
               <div className="absolute top-2.5 right-20 z-50 flex items-center gap-2">
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  className="h-8 text-slate-400 hover:text-white bg-slate-900/50 border border-white/5 hover:bg-white/10 gap-2 px-3" 
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 text-slate-400 hover:text-white bg-slate-900/50 border border-white/5 hover:bg-white/10 gap-2 px-3"
                   onClick={handleSave}
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span className="text-xs font-medium">Save</span>
                 </Button>
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
+                <Button
+                  size="sm"
+                  variant="ghost"
                   className="h-8 text-slate-400 hover:text-white bg-slate-900/50 border border-white/5 hover:bg-white/10 gap-2 px-3"
                 >
                   <Share2 className="w-3.5 h-3.5" />

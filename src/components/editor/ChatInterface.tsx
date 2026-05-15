@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2, Sparkles, Trash2, Info, AlertCircle, Zap } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles, Trash2, AlertCircle, Zap } from 'lucide-react';
 import { chatService } from '@/lib/chat';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -9,11 +9,8 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-  tokens?: number;
-}
+import { Message } from '../../../worker/types';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/dialog";
 interface ChatInterfaceProps {
   onStreamUpdate: (text: string) => void;
 }
@@ -21,11 +18,25 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  // Zustand Zero-Tolerance Rule: Select primitives individually
   const userCredits = useStore(s => s.user?.credits ?? 0);
   const consumeCredit = useStore(s => s.consumeCredit);
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Load existing messages
+  useEffect(() => {
+    const loadHistory = async () => {
+      const res = await chatService.getMessages();
+      if (res.success && res.data?.messages) {
+        setMessages(res.data.messages);
+        // Find latest code if any
+        const lastAssistantMsg = [...res.data.messages].reverse().find(m => m.role === 'assistant');
+        if (lastAssistantMsg) {
+          onStreamUpdate(lastAssistantMsg.content);
+        }
+      }
+    };
+    loadHistory();
+  }, [onStreamUpdate]);
   const scrollToBottom = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -38,14 +49,11 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
     if (userCredits <= 0) {
       toast.error("Daily Token Limit Reached", {
         description: "Your vision is growing faster than your credits. Upgrade to continue.",
-        action: {
-          label: "View Pricing",
-          onClick: () => navigate('/pricing'),
-        },
+        action: { label: "View Pricing", onClick: () => navigate('/pricing') },
       });
       return;
     }
-    const userMsg: Message = { role: 'user', content: input };
+    const userMsg: Message = { id: crypto.randomUUID(), role: 'user', content: input, timestamp: Date.now() };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setIsLoading(true);
@@ -63,18 +71,27 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
       });
       if (result.success) {
         setMessages(prev => [...prev, {
+          id: crypto.randomUUID(),
           role: 'assistant',
           content: fullStreamedText,
-          tokens: Math.floor(fullStreamedText.length / 4) // Mock token count
+          timestamp: Date.now(),
+          toolCalls: []
         }]);
       } else {
-        setMessages(prev => [...prev, { role: 'assistant', content: "System error: " + result.error }]);
+        toast.error("Generation Failed", { description: result.error });
       }
     } catch (err) {
-      console.error(err);
       toast.error("Connection Interrupted");
     } finally {
       setIsLoading(false);
+    }
+  };
+  const handleClear = async () => {
+    const res = await chatService.clearMessages();
+    if (res.success) {
+      setMessages([]);
+      onStreamUpdate("");
+      toast.success("Workspace cleared");
     }
   };
   const suggestions = [
@@ -96,7 +113,7 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
             variant="ghost"
             size="icon"
             className="text-slate-500 hover:text-red-400 h-8 w-8"
-            onClick={() => { setMessages([]); onStreamUpdate(""); chatService.newSession(); }}
+            onClick={handleClear}
           >
             <Trash2 className="w-4 h-4" />
           </Button>
@@ -127,7 +144,7 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
             </div>
           )}
           {messages.map((m, i) => (
-            <div key={i} className={cn(
+            <div key={m.id || i} className={cn(
               "group flex flex-col gap-2 transition-all",
               m.role === 'user' ? "items-end" : "items-start"
             )}>
@@ -147,12 +164,6 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
                   </ReactMarkdown>
                 </div>
               </div>
-              {m.tokens && (
-                <span className="text-[10px] text-slate-600 font-mono flex items-center gap-1.5 px-2">
-                  <Zap className="w-2.5 h-2.5" />
-                  {m.tokens} tokens burned
-                </span>
-              )}
             </div>
           ))}
           {isLoading && (

@@ -8,9 +8,12 @@ import { useStore } from '@/lib/store';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from '@/components/ui/button';
-export function Navbar() {
+import { SidebarTrigger } from '@/components/ui/sidebar';
+interface NavbarProps {
+  showTrigger?: boolean;
+}
+export function Navbar({ showTrigger = false }: NavbarProps) {
   const location = useLocation();
-  // Zustand Zero-Tolerance Rule: Select primitives individually
   const userEmail = useStore(s => s.user?.email);
   const userCredits = useStore(s => s.user?.credits);
   const userTier = useStore(s => s.user?.tier);
@@ -21,8 +24,13 @@ export function Navbar() {
   return (
     <nav className="sticky top-0 z-[60] w-full border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md h-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <Link to="/" className="flex items-center gap-2 group">
+        <div className="flex items-center gap-4">
+          {showTrigger && (
+            <div className="mr-2">
+              <SidebarTrigger className="h-9 w-9" />
+            </div>
+          )}
+          <Link to="/" className="flex items-center gap-2 group shrink-0">
             <div className="p-1.5 rounded-lg bg-gradient-to-br from-cyan-400 to-violet-600">
               <Code2 className="w-5 h-5 text-white" />
             </div>
@@ -30,7 +38,7 @@ export function Navbar() {
               AetherCode
             </span>
           </Link>
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-1 ml-4">
             <Link to="/editor" className={cn(
               "px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2 transition-colors",
               location.pathname === '/editor' ? "text-cyan-500 bg-cyan-500/5" : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
