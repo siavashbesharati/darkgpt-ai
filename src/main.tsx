@@ -21,7 +21,7 @@ const router = createBrowserRouter([
   { path: "/pricing", element: <PricingPage />, errorElement: <RouteErrorBoundary /> },
   { path: "/admin", element: <ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>, errorElement: <RouteErrorBoundary /> },
 ]);
-function App() {
+export function App() {
   const refreshUser = useStore(s => s.refreshUser);
   const isAuthenticated = useStore(s => s.isAuthenticated);
   useEffect(() => {

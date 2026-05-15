@@ -116,6 +116,15 @@ export class AppController extends DurableObject<Env> {
     });
     await this.persist();
   }
+  async updateSessionActivity(sessionId: string): Promise<void> {
+    await this.ensureLoaded();
+    const session = this.sessions.get(sessionId);
+    if (session) {
+      session.lastActive = Date.now();
+      this.sessions.set(sessionId, session);
+      await this.persist();
+    }
+  }
   async removeSession(sessionId: string): Promise<boolean> {
     await this.ensureLoaded();
     const deleted = this.sessions.delete(sessionId);

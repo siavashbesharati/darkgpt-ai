@@ -5,8 +5,9 @@ import { DollarSign, Users, Cpu, Activity, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 export function DashboardOverview() {
   const transactions = useStore((s) => s.transactions);
-  const credits = useStore((s) => s.credits);
-  const tier = useStore((s) => s.tier);
+  const user = useStore((s) => s.user);
+  const credits = user?.credits ?? 0;
+  const tier = user?.tier ?? 'Guest';
   const totalRevenue = transactions.reduce((acc, tx) => acc + (tx.planName === 'Pro' ? 29 : 99), 0);
   const stats = [
     { label: 'Total Revenue', value: `$${totalRevenue}`, icon: DollarSign, trend: '+12%', color: 'text-emerald-400' },

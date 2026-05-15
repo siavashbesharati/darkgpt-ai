@@ -12,7 +12,6 @@ export function coreRoutes(app: Hono<{ Bindings: Env }>) {
             const agent = await getAgentByName<Env, ChatAgent>(c.env.CHAT_AGENT, sessionId);
             const url = new URL(c.req.url);
             url.pathname = url.pathname.replace(`/api/chat/${sessionId}`, '');
-            // Pass user id to agent
             const newReq = new Request(url.toString(), {
                 method: c.req.method,
                 headers: { ...c.req.header(), 'X-User-Id': userId },
@@ -46,6 +45,13 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const user = await controller.getUser(userId);
         if (!user) return c.json({ success: false, error: 'User not found' }, 404);
         return c.json({ success: true, data: user });
+    });
+    app.post('/api/credits/consume', async (c) => {
+        const userId = c.req.header('Authorization');
+        if (!userId) return c.json({ success: false, error: 'Unauthorized' }, 401);
+        const controller = getAppController(c.env);
+        const success = await controller.consumeCredits(userId, 1);
+        return c.json({ success });
     });
     app.get('/api/admin/settings', async (c) => {
         const controller = getAppController(c.env);

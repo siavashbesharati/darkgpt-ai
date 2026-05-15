@@ -20,8 +20,9 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const consumeCredit = useStore((s) => s.consumeCredit);
-  const credits = useStore((s) => s.credits);
+  const user = useStore(s => s.user);
+  const consumeCredit = useStore(s => s.consumeCredit);
+  const credits = user?.credits ?? 0;
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollToBottom = () => {
@@ -47,10 +48,14 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setIsLoading(true);
-    // Consume credit on submit
-    consumeCredit();
-    let fullStreamedText = "";
     try {
+      const success = await consumeCredit();
+      if (!success) {
+        toast.error("Failed to verify credits. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+      let fullStreamedText = "";
       const result = await chatService.sendMessage(input, undefined, (chunk) => {
         fullStreamedText += chunk;
         onStreamUpdate(fullStreamedText);
@@ -62,6 +67,7 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
       }
     } catch (err) {
       console.error(err);
+      toast.error("A system error occurred.");
     } finally {
       setIsLoading(false);
     }
