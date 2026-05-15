@@ -4,59 +4,44 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Save, Globe, Key, AlertTriangle, RefreshCcw, Wallet, Network, Coins, MessageSquare, Send } from 'lucide-react';
+import { Save, Globe, Key, AlertTriangle, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useStore } from '@/lib/store';
 export function ConfigPanel() {
   const [config, setConfig] = useState({
     aiBaseUrl: '',
     aiApiKey: '',
-    maintenanceMode: false,
-    networkMode: 'testnet',
-    tonMainnetAddress: '',
-    tonTestnetAddress: '',
-    tonMainnetUsdtAddress: '',
-    tonTestnetUsdtAddress: '',
-    tonApiUrl: '',
-    telegramId: ''
+    maintenanceMode: false
   });
   const [loading, setLoading] = useState(false);
   const token = useStore(s => s.token);
   useEffect(() => {
     const fetchConfig = async () => {
-      if (!token) return;
       try {
         const res = await fetch('/api/admin/settings', {
-          headers: { 'Authorization': token }
+          headers: { 'Authorization': token || '' }
         });
         const json = await res.json();
-        if (json.success) {
-          setConfig(prev => ({
-            ...prev,
-            ...json.data
-          }));
-        }
+        if (json.success) setConfig(json.data);
       } catch (e) {
-        console.error("[ADMIN] Platform settings load failed:", e);
+        console.error("Failed to load platform settings");
       }
     };
     fetchConfig();
   }, [token]);
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token) return;
     setLoading(true);
     try {
       const res = await fetch('/api/admin/settings', {
         method: 'POST',
-        headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+        headers: { 'Authorization': token || '', 'Content-Type': 'application/json' },
         body: JSON.stringify(config)
       });
       if (res.ok) {
-        toast.success("Platform orchestrations updated");
+        toast.success("Platform settings updated successfully");
       } else {
-        throw new Error("API responded with error");
+        throw new Error();
       }
     } catch (e) {
       toast.error("Configuration sync failed");
@@ -65,168 +50,78 @@ export function ConfigPanel() {
     }
   };
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500 pb-20">
-      <form onSubmit={handleSave} className="space-y-8">
-        <Card className="bg-card border-border shadow-lg">
-          <CardHeader className="border-b border-border/50">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                <Globe className="w-5 h-5" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">AI Provider Orchestration</CardTitle>
-                <CardDescription>Dynamic endpoint management for Cloudflare AI Gateway.</CardDescription>
-              </div>
+    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <Card className="bg-card border-border shadow-lg">
+        <CardHeader className="border-b border-border/50">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+              <Globe className="w-5 h-5" />
             </div>
-          </CardHeader>
-          <CardContent className="p-8 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <CardTitle className="text-xl">AI Provider Orchestration</CardTitle>
+              <CardDescription>Dynamic endpoint management for Cloudflare AI Gateway.</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-8">
+          <form onSubmit={handleSave} className="space-y-6">
+            <div className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Base URL</Label>
+                <Label htmlFor="base-url" className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                  <Globe className="w-3 h-3" /> Base URL
+                </Label>
                 <Input
-                  value={config.aiBaseUrl || ""}
+                  id="base-url"
+                  placeholder="https://gateway.ai.cloudflare.com/v1/..."
+                  value={config.aiBaseUrl}
                   onChange={(e) => setConfig({ ...config, aiBaseUrl: e.target.value })}
                   className="bg-background border-border font-mono text-sm"
-                  placeholder="https://..."
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">API Key</Label>
-                <Input
-                  type="password"
-                  value={config.aiApiKey || ""}
-                  onChange={(e) => setConfig({ ...config, aiApiKey: e.target.value })}
-                  className="bg-background border-border font-mono text-sm"
-                  placeholder="cf_api_..."
-                />
+                <Label htmlFor="api-key" className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                  <Key className="w-3 h-3" /> API Key
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="api-key"
+                    type="password"
+                    placeholder="cf_api_xxxxxxxxxxxxxxxxxxxx"
+                    value={config.aiApiKey}
+                    onChange={(e) => setConfig({ ...config, aiApiKey: e.target.value })}
+                    className="bg-background border-border font-mono text-sm pr-10"
+                  />
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border shadow-lg">
-          <CardHeader className="border-b border-border/50 bg-muted/5">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-red-600/10 text-red-600">
-                <MessageSquare className="w-5 h-5" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">Tactical Support Channel</CardTitle>
-                <CardDescription>Configure the primary comms link for field operators.</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-8 space-y-4">
-            <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <Send className="w-3.5 h-3.5" /> Telegram Command ID
-              </Label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-mono">@</div>
-                <Input
-                  value={config.telegramId || ""}
-                  onChange={(e) => setConfig({ ...config, telegramId: e.target.value.replace('@', '') })}
-                  className="bg-background border-border font-mono pl-8"
-                  placeholder="DarkGptAdmin"
-                />
-              </div>
-              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter italic">
-                The floating support button will direct users to t.me/{config.telegramId || 'handle'}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border shadow-lg">
-          <CardHeader className="border-b border-border/50 bg-muted/5">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-500">
-                <Network className="w-5 h-5" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">TON Blockchain Configuration</CardTitle>
-                <CardDescription>Manage network environments and payment destinations.</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-8 space-y-8">
-            <div className="flex flex-col md:flex-row gap-8 items-start justify-between p-6 rounded-2xl border border-border bg-muted/20">
+            <div className="p-4 rounded-xl border border-destructive/20 bg-destructive/5 flex items-center justify-between">
               <div className="space-y-1">
-                <Label className="text-base font-bold">Network Mode</Label>
-                <p className="text-xs text-muted-foreground">Switching to Mainnet enables real-value transactions.</p>
+                <Label className="text-sm font-bold flex items-center gap-2 text-destructive">
+                  <AlertTriangle className="w-4 h-4" /> Maintenance Mode
+                </Label>
+                <p className="text-[11px] text-muted-foreground leading-tight max-w-[240px]">
+                  When active, non-admin users will be redirected to a splash page.
+                </p>
               </div>
-              <RadioGroup
-                value={config.networkMode || "testnet"}
-                onValueChange={(val) => setConfig({ ...config, networkMode: val as 'testnet' | 'mainnet' })}
-                className="flex items-center gap-4"
-              >
-                <div className="flex items-center space-x-2 bg-background p-3 rounded-xl border border-border">
-                  <RadioGroupItem value="testnet" id="testnet" />
-                  <Label htmlFor="testnet" className="font-bold text-sm cursor-pointer">Testnet</Label>
-                </div>
-                <div className="flex items-center space-x-2 bg-background p-3 rounded-xl border border-border">
-                  <RadioGroupItem value="mainnet" id="mainnet" />
-                  <Label htmlFor="mainnet" className="font-bold text-sm cursor-pointer text-amber-500">Mainnet</Label>
-                </div>
-              </RadioGroup>
+              <Switch 
+                checked={config.maintenanceMode}
+                onCheckedChange={(checked) => setConfig({ ...config, maintenanceMode: checked })}
+              />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              <div className="space-y-6">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                  <Wallet className="w-3.5 h-3.5" /> Native TON Wallets
-                </div>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-[10px] text-muted-foreground font-bold">MAINNET TON</Label>
-                    <Input
-                      value={config.tonMainnetAddress || ""}
-                      onChange={(e) => setConfig({ ...config, tonMainnetAddress: e.target.value })}
-                      className="bg-background border-border font-mono text-xs"
-                      placeholder="EQ..."
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-[10px] text-muted-foreground font-bold">TESTNET TON</Label>
-                    <Input
-                      value={config.tonTestnetAddress || ""}
-                      onChange={(e) => setConfig({ ...config, tonTestnetAddress: e.target.value })}
-                      className="bg-background border-border font-mono text-xs"
-                      placeholder="EQ..."
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-6">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                  <Coins className="w-3.5 h-3.5" /> USDT Jetton Wallets
-                </div>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-[10px] text-muted-foreground font-bold text-cyan-500">MAINNET USDT</Label>
-                    <Input
-                      value={config.tonMainnetUsdtAddress || ""}
-                      onChange={(e) => setConfig({ ...config, tonMainnetUsdtAddress: e.target.value })}
-                      className="bg-background border-border font-mono text-xs"
-                      placeholder="EQ..."
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-[10px] text-muted-foreground font-bold text-cyan-500">TESTNET USDT</Label>
-                    <Input
-                      value={config.tonTestnetUsdtAddress || ""}
-                      onChange={(e) => setConfig({ ...config, tonTestnetUsdtAddress: e.target.value })}
-                      className="bg-background border-border font-mono text-xs"
-                      placeholder="EQ..."
-                    />
-                  </div>
-                </div>
-              </div>
+            <div className="pt-4 flex gap-4">
+              <Button type="submit" disabled={loading} className="flex-1 bg-primary text-primary-foreground font-bold h-12 rounded-xl shadow-lg hover:scale-[1.02] transition-all">
+                {loading ? <RefreshCcw className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                Sync Global Configuration
+              </Button>
             </div>
-            <Button type="submit" disabled={loading} className="w-full h-14 bg-primary text-primary-foreground font-bold rounded-2xl shadow-xl hover:scale-[1.01] transition-all">
-              {loading ? <RefreshCcw className="w-5 h-5 mr-2 animate-spin" /> : <Save className="w-5 h-5 mr-2" />}
-              Sync & Orchestrate Platform
-            </Button>
-          </CardContent>
-        </Card>
-      </form>
+          </form>
+        </CardContent>
+      </Card>
+      <div className="p-6 rounded-2xl border border-border bg-muted/30 text-center">
+        <p className="text-xs text-muted-foreground font-medium italic">
+          Changes take effect immediately across all active Durable Object instances.
+        </p>
+      </div>
     </div>
   );
 }

@@ -34,17 +34,13 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const { email } = await c.req.json();
         const controller = getAppController(c.env);
         const code = await controller.createOTP(email);
-        console.log('--- DEMO LOGIN REQUEST ---');
-        console.log(`Email: ${email}`);
-        console.log(`Assigned OTP: ${code}`);
-        console.log('---------------------------');
         return c.json({ success: true, message: 'OTP sent to email (Demo code: 123456)' });
     });
     app.post('/api/auth/verify-otp', async (c) => {
         const { email, code } = await c.req.json();
         const controller = getAppController(c.env);
         const user = await controller.verifyOTP(email, code);
-        if (!user) return c.json({ success: false, error: 'Invalid or expired OTP' }, 400);
+        if (!user) return c.json({ success: false, error: 'Invalid OTP or User Blocked' }, 400);
         return c.json({ success: true, data: { user, token: user.id } });
     });
     app.get('/api/auth/me', async (c) => {
@@ -62,6 +58,18 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const success = await controller.consumeCredits(userId, 1);
         return c.json({ success });
     });
+    app.get('/api/admin/users', async (c) => {
+        const controller = getAppController(c.env);
+        const users = await controller.listUsers();
+        return c.json({ success: true, data: users });
+    });
+    app.post('/api/admin/users/:id/status', async (c) => {
+        const userId = c.req.param('id');
+        const { blocked } = await c.req.json();
+        const controller = getAppController(c.env);
+        const success = await controller.updateUserStatus(userId, blocked);
+        return c.json({ success });
+    });
     app.get('/api/admin/settings', async (c) => {
         const controller = getAppController(c.env);
         return c.json({ success: true, data: await controller.getSettings() });
@@ -75,7 +83,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     app.post('/api/upgrade', async (c) => {
         const userId = c.req.header('Authorization');
         const { tier, credits } = await c.req.json();
-        if (!userId) return c.json({ success: false, error: 'Unauthorized' }, 401);
         const controller = getAppController(c.env);
         await controller.upgradeUser(userId, tier, credits);
         return c.json({ success: true });

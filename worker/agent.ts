@@ -25,7 +25,13 @@ export class ChatAgent extends Agent<Env, ChatState> {
   async onRequest(request: Request): Promise<Response> {
     const url = new URL(request.url);
     const userId = request.headers.get('Authorization');
-    // Every valid request updates session activity
+    if (userId) {
+      const controller = getAppController(this.env);
+      const user = await controller.getUser(userId);
+      if (user?.blocked) {
+        return Response.json({ success: false, error: 'USER_BLOCKED' }, { status: 403 });
+      }
+    }
     if (this.state.sessionId) {
       await updateSessionActivity(this.env, this.state.sessionId);
     }
@@ -54,7 +60,6 @@ export class ChatAgent extends Agent<Env, ChatState> {
     if (!message?.trim()) {
       return Response.json({ success: false, error: API_RESPONSES.MISSING_MESSAGE }, { status: 400 });
     }
-    // Register session if it's new
     if (this.state.messages.length === 0) {
       const title = message.trim().slice(0, 40) + (message.trim().length > 40 ? '...' : '');
       await registerSession(this.env, this.state.sessionId, title);

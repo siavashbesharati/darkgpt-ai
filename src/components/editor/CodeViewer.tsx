@@ -32,14 +32,14 @@ export function CodeViewer({ code, language }: CodeViewerProps) {
       <Tabs defaultValue="code" className="flex-1 flex flex-col">
         <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/30">
           <TabsList className="bg-muted border border-border">
-            <TabsTrigger 
-              value="code" 
+            <TabsTrigger
+              value="code"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs"
             >
               Code
             </TabsTrigger>
-            <TabsTrigger 
-              value="preview" 
+            <TabsTrigger
+              value="preview"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs"
             >
               Preview
@@ -82,7 +82,6 @@ export function CodeViewer({ code, language }: CodeViewerProps) {
               folding: true,
               lineDecorationsWidth: 0,
               lineNumbersMinChars: 3,
-              backgroundColor: isDark ? '#0a0d14' : '#ffffff'
             }}
           />
         </TabsContent>

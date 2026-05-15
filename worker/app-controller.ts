@@ -7,6 +7,7 @@ export interface User {
   tier: 'Free' | 'Pro' | 'Max';
   credits: number;
   isAdmin: boolean;
+  blocked: boolean;
   createdAt: number;
 }
 export interface AppSettings {
@@ -54,16 +55,15 @@ export class AppController extends DurableObject<Env> {
     await this.persist();
   }
   async createOTP(email: string): Promise<string> {
-    // Generate code for logging, but verifyOTP uses hardcoded '123456' for demo
     const code = "123456";
-    this.otps.set(email, { code, expires: Date.now() + 600000 }); // 10 mins
+    this.otps.set(email, { code, expires: Date.now() + 600000 });
     return code;
   }
   async verifyOTP(email: string, code: string): Promise<User | null> {
     await this.ensureLoaded();
-    // DEMO AUTH: Hardcoded global code
     if (code !== "123456") return null;
     let user = Array.from(this.users.values()).find(u => u.email === email);
+    if (user?.blocked) return null;
     if (!user) {
       user = {
         id: crypto.randomUUID(),
@@ -71,6 +71,7 @@ export class AppController extends DurableObject<Env> {
         tier: 'Free',
         credits: 10,
         isAdmin: email === 'siavashbesharati@gmail.com',
+        blocked: false,
         createdAt: Date.now()
       };
       this.users.set(user.id, user);
@@ -82,10 +83,23 @@ export class AppController extends DurableObject<Env> {
     await this.ensureLoaded();
     return this.users.get(userId) || null;
   }
+  async listUsers(): Promise<User[]> {
+    await this.ensureLoaded();
+    return Array.from(this.users.values()).sort((a, b) => b.createdAt - a.createdAt);
+  }
+  async updateUserStatus(userId: string, blocked: boolean): Promise<boolean> {
+    await this.ensureLoaded();
+    const user = this.users.get(userId);
+    if (!user) return false;
+    user.blocked = blocked;
+    this.users.set(userId, user);
+    await this.persist();
+    return true;
+  }
   async consumeCredits(userId: string, amount: number): Promise<boolean> {
     await this.ensureLoaded();
     const user = this.users.get(userId);
-    if (!user || user.credits < amount) return false;
+    if (!user || user.blocked || user.credits < amount) return false;
     user.credits -= amount;
     this.users.set(userId, user);
     await this.persist();
