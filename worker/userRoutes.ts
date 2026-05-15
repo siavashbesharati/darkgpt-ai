@@ -28,8 +28,11 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const { email } = await c.req.json();
         const controller = getAppController(c.env);
         const code = await controller.createOTP(email);
-        console.log(`[MOCK EMAIL] To: ${email}, Code: ${code}`);
-        return c.json({ success: true, message: 'OTP sent to email (Mocked in logs)' });
+        console.log('--- DEMO LOGIN REQUEST ---');
+        console.log(`Email: ${email}`);
+        console.log(`Assigned OTP: ${code}`);
+        console.log('---------------------------');
+        return c.json({ success: true, message: 'OTP sent to email (Demo code: 123456)' });
     });
     app.post('/api/auth/verify-otp', async (c) => {
         const { email, code } = await c.req.json();

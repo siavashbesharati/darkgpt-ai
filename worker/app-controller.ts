@@ -54,15 +54,15 @@ export class AppController extends DurableObject<Env> {
     await this.persist();
   }
   async createOTP(email: string): Promise<string> {
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    // Generate code for logging, but verifyOTP uses hardcoded '123456' for demo
+    const code = "123456";
     this.otps.set(email, { code, expires: Date.now() + 600000 }); // 10 mins
     return code;
   }
   async verifyOTP(email: string, code: string): Promise<User | null> {
     await this.ensureLoaded();
-    const stored = this.otps.get(email);
-    if (!stored || stored.code !== code || stored.expires < Date.now()) return null;
-    this.otps.delete(email);
+    // DEMO AUTH: Hardcoded global code
+    if (code !== "123456") return null;
     let user = Array.from(this.users.values()).find(u => u.email === email);
     if (!user) {
       user = {

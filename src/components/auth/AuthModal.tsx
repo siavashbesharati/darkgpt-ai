@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Mail, ShieldCheck } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, Mail, ShieldCheck, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { useStore } from '@/lib/store';
 export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
@@ -23,7 +24,9 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
       });
       if (res.ok) {
         setStep('otp');
-        toast.success("Check your email for the code");
+        toast.success("Demo OTP: 123456", {
+          description: "Check the developer console for the system log."
+        });
       }
     } catch (e) {
       toast.error("Failed to send OTP");
@@ -43,7 +46,7 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
       const json = await res.json();
       if (json.success) {
         setAuth(json.data.user, json.data.token);
-        toast.success("Welcome back!");
+        toast.success("Welcome to AetherCode!");
         onOpenChange(false);
       } else {
         toast.error(json.error || "Invalid code");
@@ -58,6 +61,11 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[400px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
         <DialogHeader>
+          <div className="flex items-center justify-between mb-2">
+            <Badge variant="outline" className="bg-cyan-500/10 text-cyan-500 border-cyan-500/20 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
+              <Sparkles className="w-3 h-3" /> Demo Mode
+            </Badge>
+          </div>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="w-5 h-5 text-cyan-500" />
             {step === 'email' ? 'Welcome to AetherCode' : 'Check your inbox'}
@@ -71,16 +79,16 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
             <form onSubmit={handleSendOTP} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email address</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="name@example.com" 
-                  required 
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
-              <Button type="submit" className="w-full bg-cyan-500 hover:bg-cyan-600 text-white" disabled={loading}>
+              <Button type="submit" className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold" disabled={loading}>
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                 Send Magic Code
               </Button>
@@ -89,16 +97,20 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
             <form onSubmit={handleVerify} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="code">One-Time Password</Label>
-                <Input 
-                  id="code" 
-                  placeholder="123456" 
-                  required 
+                <Input
+                  id="code"
+                  placeholder="123456"
+                  required
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   maxLength={6}
+                  className="tracking-[0.5em] text-center font-mono font-bold text-lg"
                 />
+                <p className="text-[11px] text-muted-foreground text-center pt-1 italic">
+                  Demo Hint: Use the global code <span className="text-cyan-500 font-bold">123456</span>
+                </p>
               </div>
-              <Button type="submit" className="w-full bg-cyan-500 hover:bg-cyan-600 text-white" disabled={loading}>
+              <Button type="submit" className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold" disabled={loading}>
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                 Verify & Continue
               </Button>
