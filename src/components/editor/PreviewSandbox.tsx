@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback, memo } from 'react';
-import { Loader2, RefreshCw, Maximize2, Copy, Terminal } from 'lucide-react';
+import { Loader2, RefreshCw, Maximize2, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 interface PreviewSandboxProps {
@@ -9,9 +9,12 @@ interface PreviewSandboxProps {
 export const PreviewSandbox = memo(function PreviewSandbox({ code, language }: PreviewSandboxProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const generateSrcDoc = useCallback(() => {
     try {
+      const baseStyles = `
+        body { margin: 0; padding: 24px; background: white; color: #0f172a; min-height: 100vh; font-family: sans-serif; }
+        .error-overlay { padding: 32px; font-family: monospace; color: #ef4444; background: #fef2f2; border: 1px solid #fee2e2; border-radius: 8px; margin: 20px; }
+      `;
       if (['html', 'xml', 'svg'].includes(language)) {
         const hasFullStructure = code.includes('<html') || code.includes('<body');
         if (hasFullStructure) return code;
@@ -21,9 +24,7 @@ export const PreviewSandbox = memo(function PreviewSandbox({ code, language }: P
           <head>
             <meta charset="UTF-8">
             <script src="https://cdn.tailwindcss.com"></script>
-            <style>
-              body { margin: 0; padding: 24px; background: white; color: #0f172a; min-height: 100vh; font-family: sans-serif; }
-            </style>
+            <style>${baseStyles}</style>
           </head>
           <body>${code}</body>
           </html>
@@ -37,20 +38,21 @@ export const PreviewSandbox = memo(function PreviewSandbox({ code, language }: P
             <meta charset="UTF-8">
             <script src="https://cdn.tailwindcss.com"></script>
             <style>
-               body { background: #f8fafc; margin: 0; padding: 20px; font-family: sans-serif; }
-               #root { background: white; border-radius: 12px; min-height: calc(100vh - 40px); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+               ${baseStyles}
+               body { background: #f8fafc; padding: 0; }
+               #root { background: white; border-radius: 12px; min-height: 100vh; }
             </style>
           </head>
           <body>
             <div id="root"></div>
             <script type="module">
+              const root = document.getElementById('root');
               try {
                 ${code}
               } catch (err) {
-                const root = document.getElementById('root');
-                root.innerHTML = \`<div style="padding: 32px; font-family: monospace; color: #ef4444; background: #fef2f2; border: 1px solid #fee2e2; border-radius: 8px;">
-                  <h3 style="margin: 0 0 16px 0;">Runtime Error</h3>
-                  <pre style="white-space: pre-wrap; font-size: 13px;">\${err.stack || err.message}</pre>
+                root.innerHTML = \`<div class="error-overlay">
+                  <h3 style="margin: 0 0 12px 0; font-size: 16px;">Runtime Error</h3>
+                  <pre style="white-space: pre-wrap; font-size: 13px; margin: 0;">\${err.stack || err.message}</pre>
                 </div>\`;
               }
             </script>
@@ -60,18 +62,22 @@ export const PreviewSandbox = memo(function PreviewSandbox({ code, language }: P
       }
       return `<!DOCTYPE html><html><body style="display:flex;align-items:center;justify-content:center;height:100vh;color:#94a3b8;font-family:sans-serif">Preview not available for ${language}</body></html>`;
     } catch (err) {
-      return `<!DOCTYPE html><html><body>Error generating preview</body></html>`;
+      return `<!DOCTYPE html><html><body><div style="color: red; padding: 20px;">Critical: Failed to generate preview content.</div></body></html>`;
     }
   }, [code, language]);
   const refresh = useCallback(() => {
     setIsLoading(true);
-    setError(null);
     if (iframeRef.current) {
-      iframeRef.current.srcdoc = generateSrcDoc();
+      try {
+        iframeRef.current.srcdoc = generateSrcDoc();
+      } catch (err) {
+        console.error('Failed to set srcdoc:', err);
+        setIsLoading(false);
+      }
     }
   }, [generateSrcDoc]);
   useEffect(() => {
-    const timer = setTimeout(refresh, 500); // Debounce for streaming
+    const timer = setTimeout(refresh, 500);
     return () => clearTimeout(timer);
   }, [refresh]);
   const copySrc = () => {
@@ -118,7 +124,7 @@ export const PreviewSandbox = memo(function PreviewSandbox({ code, language }: P
         ref={iframeRef}
         title="preview-sandbox"
         className="w-full h-full border-none"
-        sandbox="allow-scripts allow-modals allow-forms allow-popups"
+        sandbox="allow-scripts allow-modals allow-forms allow-popups allow-same-origin"
         onLoad={() => setIsLoading(false)}
       />
       {isLoading && (

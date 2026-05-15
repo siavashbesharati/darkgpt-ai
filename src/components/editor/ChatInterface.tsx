@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Bot, User, Loader2, Sparkles, Trash2, AlertCircle } from 'lucide-react';
 import { chatService } from '@/lib/chat';
 import { Button } from '@/components/ui/button';
@@ -10,16 +10,16 @@ import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Message } from '../../../worker/types';
-import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle, 
-  AlertDialogTrigger 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 interface ChatInterfaceProps {
   onStreamUpdate: (text: string) => void;
@@ -33,25 +33,30 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
   const refreshUser = useStore(s => s.refreshUser);
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const stableOnStreamUpdate = useRef(onStreamUpdate);
   useEffect(() => {
+    stableOnStreamUpdate.current = onStreamUpdate;
+  }, [onStreamUpdate]);
+  useEffect(() => {
+    if (!token) return;
     const loadHistory = async () => {
-      const res = await chatService.getMessages(token ?? undefined);
+      const res = await chatService.getMessages(token);
       if (res.success && res.data?.messages) {
         setMessages(res.data.messages);
         const lastAssistantMsg = [...res.data.messages].reverse().find(m => m.role === 'assistant');
         if (lastAssistantMsg) {
-          onStreamUpdate(lastAssistantMsg.content);
+          stableOnStreamUpdate.current(lastAssistantMsg.content);
         }
       }
     };
     loadHistory();
-  }, [onStreamUpdate, token]);
-  const scrollToBottom = () => {
+  }, [token]);
+  const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  };
-  useEffect(scrollToBottom, [messages, isLoading]);
+  }, []);
+  useEffect(scrollToBottom, [messages, isLoading, scrollToBottom]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -69,11 +74,11 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
     try {
       let fullStreamedText = "";
       const result = await chatService.sendMessage(
-        input, 
-        undefined, 
+        input,
+        undefined,
         (chunk) => {
           fullStreamedText += chunk;
-          onStreamUpdate(fullStreamedText);
+          stableOnStreamUpdate.current(fullStreamedText);
         },
         token ?? undefined
       );
@@ -85,7 +90,6 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
           timestamp: Date.now(),
           toolCalls: []
         }]);
-        // Refresh credits after message
         await refreshUser();
       } else if (result.error === 'OUT_OF_CREDITS') {
         toast.error("Out of credits", {
@@ -105,7 +109,7 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
     const res = await chatService.clearMessages(token ?? undefined);
     if (res.success) {
       setMessages([]);
-      onStreamUpdate("");
+      stableOnStreamUpdate.current("");
       toast.success("Workspace cleared");
     }
   };

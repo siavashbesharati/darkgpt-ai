@@ -16,9 +16,9 @@ export function coreRoutes(app: Hono<{ Bindings: Env }>) {
             url.pathname = url.pathname.replace(`/api/chat/${sessionId}`, '');
             const newReq = new Request(url.toString(), {
                 method: c.req.method,
-                headers: { 
-                  ...c.req.header(), 
-                  'Authorization': token 
+                headers: {
+                  ...c.req.header(),
+                  'Authorization': token
                 },
                 body: c.req.method === 'GET' || c.req.method === 'DELETE' ? undefined : c.req.raw.body
             });
@@ -82,6 +82,19 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     });
     app.get('/api/sessions', async (c) => {
         const controller = getAppController(c.env);
-        return c.json({ success: true, data: await controller.listSessions() });
+        const sessions = await controller.listSessions();
+        return c.json({ success: true, data: sessions });
+    });
+    app.post('/api/sessions', async (c) => {
+        const { sessionId, title } = await c.req.json();
+        const controller = getAppController(c.env);
+        await controller.addSession(sessionId, title);
+        return c.json({ success: true });
+    });
+    app.delete('/api/sessions/:sessionId', async (c) => {
+        const sessionId = c.req.param('sessionId');
+        const controller = getAppController(c.env);
+        const success = await controller.removeSession(sessionId);
+        return c.json({ success });
     });
 }

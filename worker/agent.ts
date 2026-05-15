@@ -4,7 +4,7 @@ import type { ChatState } from './types';
 import { ChatHandler } from './chat';
 import { API_RESPONSES } from './config';
 import { createMessage, createStreamResponse, createEncoder } from './utils';
-import { getAppController } from './core-utils';
+import { getAppController, registerSession, updateSessionActivity } from './core-utils';
 export class ChatAgent extends Agent<Env, ChatState> {
   private chatHandler?: ChatHandler;
   initialState: ChatState = {
@@ -25,6 +25,10 @@ export class ChatAgent extends Agent<Env, ChatState> {
   async onRequest(request: Request): Promise<Response> {
     const url = new URL(request.url);
     const userId = request.headers.get('Authorization');
+    // Every valid request updates session activity
+    if (this.state.sessionId) {
+      await updateSessionActivity(this.env, this.state.sessionId);
+    }
     if (request.method === 'POST' && url.pathname === '/chat') {
       if (!userId) {
         return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
@@ -49,6 +53,11 @@ export class ChatAgent extends Agent<Env, ChatState> {
     const { message, model, stream } = body;
     if (!message?.trim()) {
       return Response.json({ success: false, error: API_RESPONSES.MISSING_MESSAGE }, { status: 400 });
+    }
+    // Register session if it's new
+    if (this.state.messages.length === 0) {
+      const title = message.trim().slice(0, 40) + (message.trim().length > 40 ? '...' : '');
+      await registerSession(this.env, this.state.sessionId, title);
     }
     if (model && model !== this.state.model) {
       this.setState({ ...this.state, model });

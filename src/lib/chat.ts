@@ -5,9 +5,9 @@ export interface ChatResponse {
   error?: string;
 }
 export const MODELS = [
-  { id: 'google-ai-studio/gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
-  { id: 'google-ai-studio/gemini-2.5-pro', name: 'Gemini 2.5 Pro' },
   { id: 'google-ai-studio/gemini-2.0-flash', name: 'Gemini 2.0 Flash' },
+  { id: 'google-ai-studio/gemini-1.5-pro', name: 'Gemini 1.5 Pro' },
+  { id: 'google-ai-studio/gemini-1.5-flash', name: 'Gemini 1.5 Flash' },
 ];
 class ChatService {
   private sessionId: string;
@@ -103,12 +103,12 @@ class ChatService {
     this.sessionId = sessionId;
     this.baseUrl = `/api/chat/${sessionId}`;
   }
-  async createSession(title?: string, sessionId?: string, firstMessage?: string): Promise<{ success: boolean; data?: { sessionId: string; title: string }; error?: string }> {
+  async createSession(title?: string, sessionId?: string): Promise<{ success: boolean; data?: { sessionId: string; title: string }; error?: string }> {
     try {
       const response = await fetch('/api/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, sessionId, firstMessage })
+        body: JSON.stringify({ title, sessionId: sessionId || this.sessionId })
       });
       return await response.json();
     } catch (error) {
@@ -118,9 +118,13 @@ class ChatService {
   async listSessions(): Promise<{ success: boolean; data?: SessionInfo[]; error?: string }> {
     try {
       const response = await fetch('/api/sessions');
-      return await response.json();
+      const json = await response.json();
+      return {
+        success: json.success,
+        data: Array.isArray(json.data) ? json.data : []
+      };
     } catch (error) {
-      return { success: false, error: 'Failed to list sessions' };
+      return { success: false, error: 'Failed to list sessions', data: [] };
     }
   }
   async deleteSession(sessionId: string): Promise<{ success: boolean; error?: string }> {
@@ -129,26 +133,6 @@ class ChatService {
       return await response.json();
     } catch (error) {
       return { success: false, error: 'Failed to delete session' };
-    }
-  }
-  async updateSessionTitle(sessionId: string, title: string): Promise<{ success: boolean; error?: string }> {
-    try {
-      const response = await fetch(`/api/sessions/${sessionId}/title`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title })
-      });
-      return await response.json();
-    } catch (error) {
-      return { success: false, error: 'Failed to update session title' };
-    }
-  }
-  async clearAllSessions(): Promise<{ success: boolean; data?: { deletedCount: number }; error?: string }> {
-    try {
-      const response = await fetch('/api/sessions', { method: 'DELETE' });
-      return await response.json();
-    } catch (error) {
-      return { success: false, error: 'Failed to clear all sessions' };
     }
   }
   async updateModel(model: string, token?: string): Promise<ChatResponse> {
@@ -176,32 +160,4 @@ export const formatTime = (timestamp: number): string => {
     hour: '2-digit',
     minute: '2-digit'
   });
-};
-export const generateSessionTitle = (firstUserMessage?: string): string => {
-  const now = new Date();
-  const dateTime = now.toLocaleString([], {
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-  if (!firstUserMessage || !firstUserMessage.trim()) {
-    return `Chat ${dateTime}`;
-  }
-  const cleanMessage = firstUserMessage.trim().replace(/\s+/g, ' ');
-  const truncated = cleanMessage.length > 40
-    ? cleanMessage.slice(0, 37) + '...'
-    : cleanMessage;
-  return `${truncated} • ${dateTime}`;
-};
-export const renderToolCall = (toolCall: ToolCall): string => {
-  const result = toolCall.result as WeatherResult | MCPResult | ErrorResult | undefined;
-  if (!result) return `⚠️ ${toolCall.name}: No result`;
-  if ('error' in result) return `❌ ${toolCall.name}: ${result.error}`;
-  if ('content' in result) return `🔧 ${toolCall.name}: Executed`;
-  if (toolCall.name === 'get_weather') {
-    const weather = result as WeatherResult;
-    return `🌤️ Weather in ${weather.location}: ${weather.temperature}°C, ${weather.condition}`;
-  }
-  return `🔧 ${toolCall.name}: Done`;
 };
