@@ -8,9 +8,10 @@ import { useStore } from '@/lib/store';
 import { toast } from 'sonner';
 import { Save, ShieldAlert } from 'lucide-react';
 export function ControlPanel() {
-  const settings = useStore((s) => s.settings);
+  // Zustand Zero-Tolerance Rule: Select primitives individually
+  const freeTierLimit = useStore((s) => s.settings.freeTierLimit);
   const updateSettings = useStore((s) => s.updateSettings);
-  const [localLimit, setLocalLimit] = React.useState(settings.freeTierLimit);
+  const [localLimit, setLocalLimit] = React.useState(freeTierLimit);
   const handleSave = () => {
     updateSettings({ freeTierLimit: localLimit });
     toast.success("System configurations updated successfully.");
@@ -26,10 +27,10 @@ export function ControlPanel() {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="free-limit" className="text-xs uppercase text-slate-500">Free Tier Daily Limit</Label>
-          <Input 
-            id="free-limit" 
-            type="number" 
+          <Label htmlFor="free-limit" className="text-xs uppercase text-slate-500">Free Tier Daily Limit ({freeTierLimit})</Label>
+          <Input
+            id="free-limit"
+            type="number"
             value={localLimit}
             onChange={(e) => setLocalLimit(Number(e.target.value))}
             className="bg-slate-950 border-white/10"

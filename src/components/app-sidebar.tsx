@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { MessageSquarePlus, Trash2, Code2, Zap, History, ChevronRight } from "lucide-react";
+import { MessageSquarePlus, Trash2, Code2, Zap, History } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -18,7 +18,9 @@ import { toast } from "sonner";
 import { SessionInfo } from "../../worker/types";
 export function AppSidebar(): JSX.Element {
   const [sessions, setSessions] = useState<SessionInfo[]>([]);
-  const user = useStore(s => s.user);
+  // Zustand Zero-Tolerance Rule: Select primitives individually
+  const userCredits = useStore(s => s.user?.credits ?? 0);
+  const userTier = useStore(s => s.user?.tier ?? 'Free');
   const currentSessionId = chatService.getSessionId();
   const loadSessions = async () => {
     const res = await chatService.listSessions();
@@ -59,7 +61,7 @@ export function AppSidebar(): JSX.Element {
         </div>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton 
+            <SidebarMenuButton
               onClick={handleNewChat}
               className="bg-cyan-500 hover:bg-cyan-600 text-white dark:text-slate-950 font-semibold"
             >
@@ -90,7 +92,7 @@ export function AppSidebar(): JSX.Element {
                     </span>
                   </div>
                 </SidebarMenuButton>
-                <SidebarMenuAction 
+                <SidebarMenuAction
                   onClick={() => handleDeleteSession(session.id)}
                   className="hover:text-red-500"
                 >
@@ -108,9 +110,9 @@ export function AppSidebar(): JSX.Element {
               <div className="p-1.5 rounded-full bg-cyan-500/10">
                 <Zap className="w-3.5 h-3.5 text-cyan-500" />
               </div>
-              <span className="text-xs font-medium">{user?.credits ?? 0} Tokens</span>
+              <span className="text-xs font-medium">{userCredits} Tokens</span>
             </div>
-            <span className="text-[10px] font-bold uppercase text-cyan-500/70">{user?.tier}</span>
+            <span className="text-[10px] font-bold uppercase text-cyan-500/70">{userTier}</span>
           </div>
           <div className="text-[10px] text-slate-500 px-2 leading-tight">
             AI limits apply across shared resources.

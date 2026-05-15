@@ -10,7 +10,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Button } from '@/components/ui/button';
 export function Navbar() {
   const location = useLocation();
-  const user = useStore(s => s.user);
+  // Zustand Zero-Tolerance Rule: Select primitives individually
+  const userEmail = useStore(s => s.user?.email);
+  const userCredits = useStore(s => s.user?.credits);
+  const userTier = useStore(s => s.user?.tier);
+  const userIsAdmin = useStore(s => s.user?.isAdmin);
   const isAuthenticated = useStore(s => s.isAuthenticated);
   const logout = useStore(s => s.logout);
   const [authOpen, setAuthOpen] = useState(false);
@@ -39,7 +43,7 @@ export function Navbar() {
             )}>
               Pricing
             </Link>
-            {user?.isAdmin && (
+            {userIsAdmin && (
               <Link to="/admin" className={cn(
                 "px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2 transition-colors",
                 location.pathname === '/admin' ? "text-cyan-500 bg-cyan-500/5" : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
@@ -54,9 +58,9 @@ export function Navbar() {
             <div className="flex items-center gap-4">
               <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/5">
                 <Zap className="w-3.5 h-3.5 text-cyan-500" />
-                <span className="text-xs font-bold tracking-tight">{user?.credits}</span>
+                <span className="text-xs font-bold tracking-tight">{userCredits}</span>
                 <Badge variant="secondary" className="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-none px-1.5 text-[10px] font-bold uppercase">
-                  {user?.tier}
+                  {userTier}
                 </Badge>
               </div>
               <DropdownMenu>
@@ -67,8 +71,8 @@ export function Navbar() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 mt-2">
                   <DropdownMenuLabel className="flex flex-col">
-                    <span className="text-sm font-bold truncate">{user?.email}</span>
-                    <span className="text-[10px] text-slate-500 uppercase tracking-widest">{user?.tier} Member</span>
+                    <span className="text-sm font-bold truncate">{userEmail}</span>
+                    <span className="text-[10px] text-slate-500 uppercase tracking-widest">{userTier} Member</span>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>

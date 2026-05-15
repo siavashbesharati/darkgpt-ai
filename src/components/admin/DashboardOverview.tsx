@@ -5,15 +5,15 @@ import { DollarSign, Users, Cpu, Activity, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 export function DashboardOverview() {
   const transactions = useStore((s) => s.transactions);
-  const user = useStore((s) => s.user);
-  const credits = user?.credits ?? 0;
-  const tier = user?.tier ?? 'Guest';
+  // Zustand Zero-Tolerance Rule: Select primitives individually
+  const userCredits = useStore((s) => s.user?.credits ?? 0);
+  const userTier = useStore((s) => s.user?.tier ?? 'Guest');
   const totalRevenue = transactions.reduce((acc, tx) => acc + (tx.planName === 'Pro' ? 29 : 99), 0);
   const stats = [
     { label: 'Total Revenue', value: `$${totalRevenue}`, icon: DollarSign, trend: '+12%', color: 'text-emerald-400' },
     { label: 'Active Sessions', value: '42', icon: Activity, trend: '+5%', color: 'text-cyan-400' },
     { label: 'Token Burn Rate', value: '1.2k', icon: Cpu, trend: '-2%', color: 'text-violet-400' },
-    { label: 'Your Balance', value: `${credits} tokens`, icon: Users, trend: tier, color: 'text-amber-400' },
+    { label: 'Your Balance', value: `${userCredits} tokens`, icon: Users, trend: userTier, color: 'text-amber-400' },
   ];
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

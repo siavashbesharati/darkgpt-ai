@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2, Sparkles, Trash2, Info, AlertCircle } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles, Trash2, Info, AlertCircle, Zap } from 'lucide-react';
 import { chatService } from '@/lib/chat';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -21,9 +21,9 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const user = useStore(s => s.user);
+  // Zustand Zero-Tolerance Rule: Select primitives individually
+  const userCredits = useStore(s => s.user?.credits ?? 0);
   const consumeCredit = useStore(s => s.consumeCredit);
-  const credits = user?.credits ?? 0;
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollToBottom = () => {
@@ -35,7 +35,7 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
-    if (credits <= 0) {
+    if (userCredits <= 0) {
       toast.error("Daily Token Limit Reached", {
         description: "Your vision is growing faster than your credits. Upgrade to continue.",
         action: {
@@ -62,8 +62,8 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
         onStreamUpdate(fullStreamedText);
       });
       if (result.success) {
-        setMessages(prev => [...prev, { 
-          role: 'assistant', 
+        setMessages(prev => [...prev, {
+          role: 'assistant',
           content: fullStreamedText,
           tokens: Math.floor(fullStreamedText.length / 4) // Mock token count
         }]);
@@ -90,14 +90,17 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
           <Bot className="w-5 h-5 text-cyan-400" />
           <span className="font-semibold text-sm">Aether Engine</span>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-slate-500 hover:text-red-400 h-8 w-8"
-          onClick={() => { setMessages([]); onStreamUpdate(""); chatService.newSession(); }}
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{userCredits} Credits</span>
+           <Button
+            variant="ghost"
+            size="icon"
+            className="text-slate-500 hover:text-red-400 h-8 w-8"
+            onClick={() => { setMessages([]); onStreamUpdate(""); chatService.newSession(); }}
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-6 max-w-2xl mx-auto">

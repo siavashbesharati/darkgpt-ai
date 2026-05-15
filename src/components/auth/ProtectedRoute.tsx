@@ -8,8 +8,10 @@ interface ProtectedRouteProps {
   adminOnly?: boolean;
 }
 export function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
+  // Zustand Zero-Tolerance Rule: Select primitives individually
   const isAuthenticated = useStore(s => s.isAuthenticated);
-  const user = useStore(s => s.user);
+  const userIsAdmin = useStore(s => s.user?.isAdmin ?? false);
+  const userExists = useStore(s => !!s.user);
   const token = useStore(s => s.token);
   const [showAuth, setShowAuth] = useState(false);
   const location = useLocation();
@@ -19,7 +21,7 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
     }
   }, [isAuthenticated, token]);
   // If we have a token but user data hasn't refreshed yet, show loader
-  if (token && !user) {
+  if (token && !userExists) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-slate-950">
         <Loader2 className="w-10 h-10 text-cyan-500 animate-spin" />
@@ -34,7 +36,7 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
       </>
     );
   }
-  if (adminOnly && !user?.isAdmin) {
+  if (adminOnly && !userIsAdmin) {
     return <Navigate to="/" replace />;
   }
   return <>{children}</>;
