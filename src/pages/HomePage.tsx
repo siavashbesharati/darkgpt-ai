@@ -8,6 +8,13 @@ export function HomePage() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50 selection:bg-cyan-500/30">
       <Navbar />
+      
+      {/* Floating background blobs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <motion.div animate={{ scale: [1, 1.2, 1], x: [0, 50, 0] }} transition={{ duration: 20, repeat: Infinity }} className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-cyan-500/10 rounded-full blur-[120px]" />
+        <motion.div animate={{ scale: [1.2, 1, 1.2], x: [0, -50, 0] }} transition={{ duration: 25, repeat: Infinity }} className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-violet-500/10 rounded-full blur-[120px]" />
+      </div>
+
       {/* Hero Section */}
       <div className="relative overflow-hidden pt-20 pb-32">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(138,43,226,0.15),transparent_50%)]" />
@@ -89,6 +96,18 @@ export function HomePage() {
           </div>
         </div>
       </div>
+      
+      {/* Social Proof */}
+      <div className="py-12 border-y border-white/5 bg-slate-900/20">
+        <div className="max-w-7xl mx-auto px-4 flex flex-wrap justify-center gap-12 items-center grayscale opacity-40">
+          <span className="font-display font-black text-2xl tracking-tighter">CLOUDFLARE</span>
+          <span className="font-display font-black text-2xl tracking-tighter">OPENAI</span>
+          <span className="font-display font-black text-2xl tracking-tighter">ANTHROPIC</span>
+          <span className="font-display font-black text-2xl tracking-tighter">REPLICATE</span>
+          <span className="font-display font-black text-2xl tracking-tighter">PINECONE</span>
+        </div>
+      </div>
+
       {/* Feature Grid */}
       <section className="py-24 border-t border-white/5 bg-slate-950/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
