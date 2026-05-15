@@ -24,7 +24,7 @@ export function EditorPage() {
     });
   };
   return (
-    <AppLayout className="bg-slate-950 overflow-hidden">
+    <AppLayout className="bg-background overflow-hidden">
       <div className="flex flex-col h-screen overflow-hidden">
         <Navbar showTrigger />
         <main className="flex-1 overflow-hidden">
@@ -32,13 +32,13 @@ export function EditorPage() {
             <ResizablePanel defaultSize={40} minSize={30} className="flex flex-col">
               <ChatInterface onStreamUpdate={setStreamingText} />
             </ResizablePanel>
-            <ResizableHandle withHandle className="w-1 bg-white/5 hover:bg-cyan-500/40 transition-colors" />
+            <ResizableHandle withHandle className="w-1 bg-border hover:bg-primary/20 transition-colors" />
             <ResizablePanel defaultSize={60} minSize={40} className="flex flex-col relative">
               <div className="absolute top-2.5 right-20 z-50 flex items-center gap-2">
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-8 text-slate-400 hover:text-white bg-slate-900/50 border border-white/5 hover:bg-white/10 gap-2 px-3"
+                  className="h-8 text-muted-foreground hover:text-foreground bg-muted/50 border border-border hover:bg-muted gap-2 px-3 transition-colors"
                   onClick={handleSave}
                 >
                   <Save className="w-3.5 h-3.5" />
@@ -47,7 +47,7 @@ export function EditorPage() {
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-8 text-slate-400 hover:text-white bg-slate-900/50 border border-white/5 hover:bg-white/10 gap-2 px-3"
+                  className="h-8 text-muted-foreground hover:text-foreground bg-muted/50 border border-border hover:bg-muted gap-2 px-3 transition-colors"
                 >
                   <Share2 className="w-3.5 h-3.5" />
                   <span className="text-xs font-medium">Deploy</span>

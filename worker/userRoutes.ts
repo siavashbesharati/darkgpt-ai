@@ -33,7 +33,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     app.post('/api/auth/send-otp', async (c) => {
         const { email } = await c.req.json();
         const controller = getAppController(c.env);
-        const code = await controller.createOTP(email);
+        await controller.createOTP(email);
         return c.json({ success: true, message: 'OTP sent to email (Demo code: 123456)' });
     });
     app.post('/api/auth/verify-otp', async (c) => {
@@ -70,6 +70,13 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const success = await controller.updateUserStatus(userId, blocked);
         return c.json({ success });
     });
+    app.post('/api/admin/users/:id/upgrade', async (c) => {
+        const targetUserId = c.req.param('id');
+        const { tier, credits } = await c.req.json();
+        const controller = getAppController(c.env);
+        await controller.upgradeUser(targetUserId, tier, credits);
+        return c.json({ success: true });
+    });
     app.get('/api/admin/settings', async (c) => {
         const controller = getAppController(c.env);
         return c.json({ success: true, data: await controller.getSettings() });
@@ -82,6 +89,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     });
     app.post('/api/upgrade', async (c) => {
         const userId = c.req.header('Authorization');
+        if (!userId) return c.json({ success: false, error: 'Unauthorized' }, 401);
         const { tier, credits } = await c.req.json();
         const controller = getAppController(c.env);
         await controller.upgradeUser(userId, tier, credits);

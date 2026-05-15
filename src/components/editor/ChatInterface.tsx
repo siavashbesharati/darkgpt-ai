@@ -33,6 +33,7 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
   const userCredits = useStore(s => s.user?.credits ?? 0);
   const token = useStore(s => s.token);
   const refreshUser = useStore(s => s.refreshUser);
+  const logout = useStore(s => s.logout);
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const stableOnStreamUpdate = useRef(onStreamUpdate);
@@ -62,6 +63,10 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
+    if (!token) {
+      toast.error("Authentication required");
+      return;
+    }
     if (userCredits <= 0) {
       toast.error("Daily Token Limit Reached", {
         description: "Your vision is growing faster than your credits. Upgrade to continue.",
@@ -82,7 +87,7 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
           fullStreamedText += chunk;
           stableOnStreamUpdate.current(fullStreamedText);
         },
-        token ?? undefined
+        token
       );
       if (result.success) {
         setMessages(prev => [...prev, {
@@ -94,7 +99,16 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
         }]);
         await refreshUser();
       } else {
-        toast.error("Generation Failed", { description: result.error });
+        if (result.error === 'USER_BLOCKED') {
+          toast.error("Account Suspended", { description: "Your account has been blocked for policy violations." });
+          logout();
+          navigate('/');
+        } else if (result.error === 'OUT_OF_CREDITS') {
+          toast.error("Credits Exhausted", { description: "Please upgrade your tier to continue using the AI engine." });
+          navigate('/pricing');
+        } else {
+          toast.error("Generation Failed", { description: result.error || "A connection error occurred" });
+        }
       }
     } catch (err) {
       toast.error("Connection Interrupted");
@@ -121,7 +135,7 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{userCredits} Credits</span>
            <AlertDialog>
              <AlertDialogTrigger asChild>
-               <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive h-8 w-8">
+               <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive h-8 w-8 transition-colors">
                  <Trash2 className="w-4 h-4" />
                </Button>
              </AlertDialogTrigger>
@@ -155,11 +169,11 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
           )}
           {messages.map((m, i) => (
             <div key={m.id || i} className={cn(
-              "flex flex-col gap-2",
+              "flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300",
               m.role === 'user' ? "items-end" : "items-start"
             )}>
               <div className={cn(
-                "flex gap-4 p-4 rounded-2xl max-w-[95%] border",
+                "flex gap-4 p-4 rounded-2xl max-w-[95%] border shadow-sm",
                 m.role === 'user' ? "bg-primary text-primary-foreground border-primary" : "bg-card text-foreground border-border"
               )}>
                 <div className={cn(
@@ -169,7 +183,7 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
                   {m.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                 </div>
                 <div className={cn(
-                  "flex-1 text-sm leading-relaxed prose prose-sm max-w-none",
+                  "flex-1 text-sm leading-relaxed prose prose-sm max-w-none break-words",
                   isDark ? "prose-invert" : "prose-slate",
                   m.role === 'user' && "text-primary-foreground"
                 )}>

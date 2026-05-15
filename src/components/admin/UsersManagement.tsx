@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, MoreHorizontal, UserCog, Ban, ShieldCheck, Mail, Zap, Trash2 } from 'lucide-react';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import { Search, MoreHorizontal, Ban, ShieldCheck, Mail, Zap } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -21,11 +21,12 @@ export function UsersManagement() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const token = useStore(s => s.token);
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
+    if (!token) return;
     setLoading(true);
     try {
       const res = await fetch('/api/admin/users', {
-        headers: { 'Authorization': token || '' }
+        headers: { 'Authorization': token }
       });
       const json = await res.json();
       if (json.success) setUsers(json.data);
@@ -34,10 +35,10 @@ export function UsersManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
   useEffect(() => {
     fetchUsers();
-  }, [token]);
+  }, [fetchUsers]);
   const toggleBlock = async (userId: string, currentStatus: boolean) => {
     try {
       const res = await fetch(`/api/admin/users/${userId}/status`, {
@@ -46,26 +47,30 @@ export function UsersManagement() {
         body: JSON.stringify({ blocked: !currentStatus })
       });
       if (res.ok) {
-        toast.success(currentStatus ? "User unblocked" : "User blocked");
+        toast.success(currentStatus ? "Access restored for user" : "User access revoked");
         fetchUsers();
+      } else {
+        toast.error("Failed to update user status");
       }
     } catch (e) {
-      toast.error("Update failed");
+      toast.error("Network error while updating status");
     }
   };
   const resetCredits = async (userId: string) => {
     try {
-      const res = await fetch('/api/upgrade', {
+      const res = await fetch(`/api/admin/users/${userId}/upgrade`, {
         method: 'POST',
         headers: { 'Authorization': token || '', 'Content-Type': 'application/json' },
         body: JSON.stringify({ tier: 'Free', credits: 10 })
       });
       if (res.ok) {
-        toast.success("Credits reset to Free default");
+        toast.success("Target user credits reset to Free default");
         fetchUsers();
+      } else {
+        toast.error("Failed to reset targeted credits");
       }
     } catch (e) {
-      toast.error("Reset failed");
+      toast.error("Reset failed due to network error");
     }
   };
   const filteredUsers = users.filter(u => u.email.toLowerCase().includes(search.toLowerCase()));
@@ -79,8 +84,8 @@ export function UsersManagement() {
           </div>
           <div className="relative w-full md:w-80">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search by email..." 
+            <Input
+              placeholder="Search by email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 bg-background border-border"
@@ -152,14 +157,14 @@ export function UsersManagement() {
                       <DropdownMenuContent align="end" className="w-56 bg-popover border-border">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => resetCredits(user.id)} className="cursor-pointer">
+                        <DropdownMenuItem onClick={() => resetCredits(user.id)} className="cursor-pointer text-amber-600 dark:text-amber-400">
                           <Zap className="w-4 h-4 mr-2" /> Reset Credits
                         </DropdownMenuItem>
                         <DropdownMenuItem className="cursor-pointer">
                           <ShieldCheck className="w-4 h-4 mr-2" /> View History
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => toggleBlock(user.id, user.blocked)}
                           className={user.blocked ? "text-emerald-500 cursor-pointer" : "text-destructive cursor-pointer"}
                         >
@@ -171,6 +176,9 @@ export function UsersManagement() {
                   </TableCell>
                 </TableRow>
               ))}
+              {!loading && filteredUsers.length === 0 && (
+                <TableRow><TableCell colSpan={6} className="text-center py-20 text-muted-foreground">No users matching criteria.</TableCell></TableRow>
+              )}
             </TableBody>
           </Table>
         </div>

@@ -25,10 +25,12 @@ export class ChatAgent extends Agent<Env, ChatState> {
   async onRequest(request: Request): Promise<Response> {
     const url = new URL(request.url);
     const userId = request.headers.get('Authorization');
+    // CRITICAL SECURITY: Immediate return for blocked users
     if (userId) {
       const controller = getAppController(this.env);
       const user = await controller.getUser(userId);
       if (user?.blocked) {
+        console.warn(`[AUDIT] Blocked user attempt: ${user.email} (ID: ${userId}) on session ${this.state.sessionId}`);
         return Response.json({ success: false, error: 'USER_BLOCKED' }, { status: 403 });
       }
     }
@@ -85,7 +87,8 @@ export class ChatAgent extends Agent<Env, ChatState> {
             const assistantMessage = createMessage('assistant', response.content);
             this.setState({ ...this.state, messages: [...this.state.messages, assistantMessage], isProcessing: false });
           } catch (err) {
-            console.error('Stream processing error in Agent:', err);
+            console.error('[CRITICAL] Stream failure in agent handleChatMessage:', err);
+            this.setState({ ...this.state, isProcessing: false });
           } finally {
             writer.close();
           }
@@ -98,7 +101,7 @@ export class ChatAgent extends Agent<Env, ChatState> {
       return Response.json({ success: true, data: this.state });
     } catch (error) {
       this.setState({ ...this.state, isProcessing: false });
-      console.error('Non-stream processing error in Agent:', error);
+      console.error('[CRITICAL] Non-stream failure in agent handleChatMessage:', error);
       return Response.json({ success: false, error: API_RESPONSES.PROCESSING_ERROR }, { status: 500 });
     }
   }
