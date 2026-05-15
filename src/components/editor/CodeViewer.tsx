@@ -1,74 +1,44 @@
 import React, { useState } from 'react';
 import Editor from '@monaco-editor/react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Copy, Check, Maximize2, Monitor } from 'lucide-react';
+import { Copy, Check, Play, Maximize2, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { PreviewSandbox } from './PreviewSandbox';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { useTheme } from '@/hooks/use-theme';
 interface CodeViewerProps {
   code: string;
   language: string;
 }
 export function CodeViewer({ code, language }: CodeViewerProps) {
   const [copied, setCopied] = useState(false);
-  const [autoRefresh, setAutoRefresh] = useState(true);
-  const { isDark } = useTheme();
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
     setCopied(true);
     toast.success("Code copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
-  const handlePopOut = () => {
-    const blob = new Blob([code], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
-  };
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-[#1e1e1e]">
       <Tabs defaultValue="code" className="flex-1 flex flex-col">
-        <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/30">
-          <TabsList className="bg-muted border border-border">
-            <TabsTrigger
-              value="code"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs"
-            >
-              Code
-            </TabsTrigger>
-            <TabsTrigger
-              value="preview"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs"
-            >
-              Preview
-            </TabsTrigger>
+        <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-slate-900/50">
+          <TabsList className="bg-slate-800/50 border border-white/5">
+            <TabsTrigger value="code" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-slate-950">Code</TabsTrigger>
+            <TabsTrigger value="preview" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-slate-950">Preview</TabsTrigger>
           </TabsList>
           <div className="flex items-center gap-2">
-            <div className="hidden md:flex items-center gap-2 mr-4 bg-muted px-3 py-1 rounded-full border border-border">
-              <Label htmlFor="auto-refresh" className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">Live</Label>
-              <Switch
-                id="auto-refresh"
-                checked={autoRefresh}
-                onCheckedChange={setAutoRefresh}
-                className="scale-75 data-[state=checked]:bg-primary"
-              />
-            </div>
-            <Button variant="ghost" size="sm" className="text-muted-foreground h-8 gap-2 hover:text-foreground" onClick={handleCopy}>
-              {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-              <span className="hidden sm:inline text-xs">Copy</span>
+            <Button variant="ghost" size="sm" className="text-slate-400 h-8 gap-2" onClick={handleCopy}>
+              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+              <span className="hidden sm:inline">Copy</span>
             </Button>
-            <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8 hover:text-foreground" onClick={handlePopOut}>
+            <Button variant="ghost" size="icon" className="text-slate-400 h-8 w-8">
               <Maximize2 className="w-4 h-4" />
             </Button>
           </div>
         </div>
-        <TabsContent value="code" className="flex-1 m-0 overflow-hidden">
+        <TabsContent value="code" className="flex-1 m-0">
           <Editor
             height="100%"
             defaultLanguage={language}
-            theme={isDark ? "vs-dark" : "light"}
+            theme="vs-dark"
             value={code}
             options={{
               minimap: { enabled: false },
@@ -81,20 +51,25 @@ export function CodeViewer({ code, language }: CodeViewerProps) {
               glyphMargin: false,
               folding: true,
               lineDecorationsWidth: 0,
-              lineNumbersMinChars: 3,
+              lineNumbersMinChars: 3
             }}
           />
         </TabsContent>
-        <TabsContent value="preview" className="flex-1 m-0 bg-background">
-          {autoRefresh ? (
-            <PreviewSandbox code={code} language={language} />
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-4">
-               <Monitor className="w-12 h-12 text-muted-foreground/30" />
-               <p className="text-muted-foreground text-sm">Live preview is paused.</p>
-               <Button onClick={() => setAutoRefresh(true)} variant="outline" className="border-border">Resume Live View</Button>
-            </div>
-          )}
+        <TabsContent value="preview" className="flex-1 m-0 bg-white">
+          <div className="h-full flex flex-col items-center justify-center text-slate-900 p-8 text-center space-y-4">
+             <div className="p-4 rounded-2xl bg-slate-100 border border-slate-200">
+               <Monitor className="w-12 h-12 text-slate-400" />
+             </div>
+             <div>
+               <h3 className="text-xl font-bold">Live Preview Sandbox</h3>
+               <p className="text-slate-500 max-w-sm mx-auto">
+                 We are preparing the isolated container to run this {language} code. In Phase 3, this will render your code in real-time.
+               </p>
+             </div>
+             <Button variant="outline" className="gap-2">
+               <Play className="w-4 h-4" /> Run Code
+             </Button>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
