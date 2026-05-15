@@ -1,15 +1,21 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Code2, Zap, CreditCard } from 'lucide-react';
+import { Code2, Zap, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Badge } from '@/components/ui/badge';
+import { useStore } from '@/lib/store';
 export function Navbar() {
   const location = useLocation();
+  const credits = useStore((s) => s.credits);
+  const tier = useStore((s) => s.tier);
+  const settings = useStore((s) => s.settings);
+  const maxCredits = tier === 'Free' ? settings.freeTierLimit : tier === 'Pro' ? settings.proTierLimit : settings.maxTierLimit;
   const navItems = [
     { name: 'Home', path: '/' },
     { name: 'Workspace', path: '/editor' },
     { name: 'Pricing', path: '/pricing' },
+    { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
   ];
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-slate-950/80 backdrop-blur-md">
@@ -30,12 +36,13 @@ export function Navbar() {
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    "px-4 py-2 text-sm font-medium rounded-md transition-colors",
+                    "px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2",
                     location.pathname === item.path
                       ? "bg-white/10 text-white"
                       : "text-slate-400 hover:text-white hover:bg-white/5"
                   )}
                 >
+                  {item.icon && <item.icon className="w-4 h-4" />}
                   {item.name}
                 </Link>
               ))}
@@ -44,9 +51,9 @@ export function Navbar() {
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-white/5">
               <Zap className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="text-xs font-medium text-slate-300">Credits:</span>
+              <span className="text-xs font-medium text-slate-300">Tokens:</span>
               <Badge variant="secondary" className="bg-cyan-500/10 text-cyan-400 border-none h-5 px-1.5 text-[10px]">
-                10/10
+                {credits}/{maxCredits}
               </Badge>
             </div>
             <ThemeToggle className="relative top-0 right-0" />

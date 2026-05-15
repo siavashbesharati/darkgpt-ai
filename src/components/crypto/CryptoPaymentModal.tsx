@@ -4,6 +4,8 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, Copy, Loader2, Wallet, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { useStore, Tier } from '@/lib/store';
+import { v4 as uuidv4 } from 'uuid';
 interface CryptoPaymentModalProps {
   planName: string;
   open: boolean;
@@ -13,6 +15,8 @@ type Step = 'select' | 'pay' | 'confirming' | 'success';
 export function CryptoPaymentModal({ planName, open, onOpenChange }: CryptoPaymentModalProps) {
   const [step, setStep] = useState<Step>('select');
   const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
+  const addTransaction = useStore((s) => s.addTransaction);
+  const upgradeTier = useStore((s) => s.upgradeTier);
   const assets = [
     { name: 'Bitcoin', symbol: 'BTC', address: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0w7h', icon: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png' },
     { name: 'Ethereum', symbol: 'ETH', address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F', icon: 'https://cryptologos.cc/logos/ethereum-eth-logo.png' },
@@ -21,12 +25,22 @@ export function CryptoPaymentModal({ planName, open, onOpenChange }: CryptoPayme
   useEffect(() => {
     if (step === 'confirming') {
       const timer = setTimeout(() => {
+        const txId = uuidv4();
+        addTransaction({
+          id: txId,
+          planName,
+          asset: selectedAsset || 'Unknown',
+          amount: planName === 'Pro' ? '29.00' : '99.00',
+          status: 'confirmed',
+          timestamp: Date.now()
+        });
+        upgradeTier(planName as Tier);
         setStep('success');
-        toast.success("Payment Confirmed! Your account is being upgraded.");
-      }, 5000);
+        toast.success("Payment Confirmed! Your account has been upgraded.");
+      }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [step]);
+  }, [step, planName, selectedAsset, addTransaction, upgradeTier]);
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.info("Address copied to clipboard");
@@ -51,7 +65,7 @@ export function CryptoPaymentModal({ planName, open, onOpenChange }: CryptoPayme
             {step === 'select' && "Select your preferred cryptocurrency"}
             {step === 'pay' && `Send payment to the ${selectedAsset} address below`}
             {step === 'confirming' && "Verifying your transaction on the blockchain..."}
-            {step === 'success' && "Your Pro features are now active!"}
+            {step === 'success' && "Your account features are now active!"}
           </DialogDescription>
         </DialogHeader>
         <div className="py-6">
@@ -78,8 +92,8 @@ export function CryptoPaymentModal({ planName, open, onOpenChange }: CryptoPayme
           {step === 'pay' && selectedAsset && (
             <div className="flex flex-col items-center space-y-6 animate-in fade-in zoom-in duration-300">
               <div className="p-4 bg-white rounded-2xl shadow-xl">
-                <QRCodeSVG 
-                  value={assets.find(a => a.symbol === selectedAsset)?.address || ""} 
+                <QRCodeSVG
+                  value={assets.find(a => a.symbol === selectedAsset)?.address || ""}
                   size={180}
                   level="H"
                 />
@@ -95,8 +109,8 @@ export function CryptoPaymentModal({ planName, open, onOpenChange }: CryptoPayme
                   </Button>
                 </div>
               </div>
-              <Button 
-                onClick={() => setStep('confirming')} 
+              <Button
+                onClick={() => setStep('confirming')}
                 className="w-full h-12 bg-cyan-500 text-slate-950 hover:bg-cyan-400 font-bold rounded-xl"
               >
                 I have sent the payment
@@ -121,11 +135,11 @@ export function CryptoPaymentModal({ planName, open, onOpenChange }: CryptoPayme
                 <CheckCircle2 className="w-12 h-12" />
               </div>
               <div className="space-y-2">
-                <h4 className="text-2xl font-bold">Payment Confirmed!</h4>
-                <p className="text-slate-400">Welcome to the elite tier of AetherCode.</p>
+                <h4 className="text-2xl font-bold">Success!</h4>
+                <p className="text-slate-400">Welcome to the {planName} tier of AetherCode.</p>
               </div>
               <Button onClick={() => onOpenChange(false)} className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-xl">
-                Get Started
+                Start Building
               </Button>
             </div>
           )}

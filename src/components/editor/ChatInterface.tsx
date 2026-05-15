@@ -4,6 +4,9 @@ import { chatService } from '@/lib/chat';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { useStore } from '@/lib/store';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 interface Message {
@@ -17,6 +20,9 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const consumeCredit = useStore((s) => s.consumeCredit);
+  const credits = useStore((s) => s.credits);
+  const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollToBottom = () => {
     if (scrollRef.current) {
@@ -27,10 +33,22 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
+    if (credits <= 0) {
+      toast.error("You have reached your daily token limit.", {
+        description: "Upgrade your plan to continue building.",
+        action: {
+          label: "View Pricing",
+          onClick: () => navigate('/pricing'),
+        },
+      });
+      return;
+    }
     const userMsg: Message = { role: 'user', content: input };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setIsLoading(true);
+    // Consume credit on submit
+    consumeCredit();
     let fullStreamedText = "";
     try {
       const result = await chatService.sendMessage(input, undefined, (chunk) => {
@@ -55,9 +73,9 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
           <Bot className="w-5 h-5 text-cyan-400" />
           <span className="font-semibold text-sm">AI Assistant</span>
         </div>
-        <Button 
-          variant="ghost" 
-          size="icon" 
+        <Button
+          variant="ghost"
+          size="icon"
           className="text-slate-500 hover:text-red-400"
           onClick={() => { setMessages([]); onStreamUpdate(""); chatService.newSession(); }}
         >
@@ -117,10 +135,10 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
             placeholder="Describe what you want to build..."
             className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3.5 pr-12 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all placeholder:text-slate-600 text-sm"
           />
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={isLoading || !input.trim()}
-            size="icon" 
+            size="icon"
             className="absolute right-1.5 top-1.5 h-10 w-10 bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all active:scale-95 disabled:bg-slate-800 disabled:text-slate-500"
           >
             <Send className="w-4 h-4" />

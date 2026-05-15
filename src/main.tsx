@@ -14,6 +14,7 @@ import '@/index.css'
 import { HomePage } from '@/pages/HomePage'
 import { EditorPage } from '@/pages/EditorPage'
 import { PricingPage } from '@/pages/PricingPage'
+import { AdminDashboard } from '@/pages/AdminDashboard'
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
@@ -29,6 +30,11 @@ const router = createBrowserRouter([
   {
     path: "/pricing",
     element: <PricingPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/admin",
+    element: <AdminDashboard />,
     errorElement: <RouteErrorBoundary />,
   },
 ]);
