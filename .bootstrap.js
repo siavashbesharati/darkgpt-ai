@@ -77,15 +77,7 @@ function updateWranglerJsonc() {
 }
 
 function runSetupCommands() {
-    const commands = [
-    "bun add @monaco-editor/react@^4.6.0",
-    "bun add react-markdown@^9.0.1",
-    "bun add remark-gfm@^4.0.0",
-    "bun add qrcode.react@^3.1.0",
-    "bun add lucide-react",
-    "bun add lucide-react@latest",
-    "bun add zustand"
-];
+    const commands = [];
     
     if (commands.length === 0) {
         console.log('⊘ No setup commands to run');

@@ -1,0 +1,50 @@
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { useStore } from '@/lib/store';
+import { DollarSign, Cpu, Activity, TrendingUp, ShieldCheck } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useShallow } from 'zustand/react/shallow';
+export function DashboardOverview() {
+  const transactions = useStore(useShallow(s => s.transactions));
+  const userTier = useStore(s => s.user?.tier ?? 'Guest');
+  const totalRevenue = React.useMemo(() => {
+    return (transactions ?? []).reduce((acc, tx) => acc + (tx.planName === 'Pro' ? 29 : 99), 0);
+  }, [transactions]);
+  const stats = [
+    { label: 'Total Revenue', value: `$${totalRevenue}`, icon: DollarSign, trend: '+12%', color: 'text-emerald-400' },
+    { label: 'Active Engine Threads', value: '42', icon: Activity, trend: 'Optimized', color: 'text-cyan-400' },
+    { label: 'System Load', value: '1.2k req/m', icon: Cpu, trend: '-2%', color: 'text-violet-400' },
+    { label: 'Auth Clearance', value: userTier, icon: ShieldCheck, trend: 'Verified', color: 'text-amber-400' },
+  ];
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {stats.map((stat, i) => (
+        <motion.div
+          key={stat.label}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.1 }}
+        >
+          <Card className="bg-slate-900 border-white/5 hover:border-white/20 transition-all group overflow-hidden h-full">
+            <CardContent className="p-6 h-full flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <div className={`p-2 rounded-lg bg-white/5 ${stat.color}`}>
+                  <stat.icon className="w-5 h-5" />
+                </div>
+                <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                  <TrendingUp className="w-3 h-3" />
+                  {stat.trend}
+                </div>
+              </div>
+              <div className="mt-4">
+                <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">{stat.label}</p>
+                <h3 className="text-2xl font-bold text-slate-100 mt-1">{stat.value}</h3>
+              </div>
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            </CardContent>
+          </Card>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
