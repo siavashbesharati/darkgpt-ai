@@ -24,15 +24,21 @@ export class ChatAgent extends Agent<Env, ChatState> {
   }
   async onRequest(request: Request): Promise<Response> {
     const url = new URL(request.url);
-    const userId = request.headers.get('X-User-Id');
+    const userId = request.headers.get('Authorization');
     if (request.method === 'POST' && url.pathname === '/chat') {
-      if (!userId) return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      if (!userId) {
+        return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      }
       const controller = getAppController(this.env);
       const canProceed = await controller.consumeCredits(userId, 1);
-      if (!canProceed) return Response.json({ success: false, error: 'OUT_OF_CREDITS' }, { status: 402 });
+      if (!canProceed) {
+        return Response.json({ success: false, error: 'OUT_OF_CREDITS' }, { status: 402 });
+      }
       return this.handleChatMessage(await request.json());
     }
-    if (request.method === 'GET' && url.pathname === '/messages') return Response.json({ success: true, data: this.state });
+    if (request.method === 'GET' && url.pathname === '/messages') {
+      return Response.json({ success: true, data: this.state });
+    }
     if (request.method === 'DELETE' && url.pathname === '/clear') {
       this.setState({ ...this.state, messages: [] });
       return Response.json({ success: true });
@@ -41,7 +47,9 @@ export class ChatAgent extends Agent<Env, ChatState> {
   }
   private async handleChatMessage(body: { message: string; model?: string; stream?: boolean }): Promise<Response> {
     const { message, model, stream } = body;
-    if (!message?.trim()) return Response.json({ success: false, error: API_RESPONSES.MISSING_MESSAGE }, { status: 400 });
+    if (!message?.trim()) {
+      return Response.json({ success: false, error: API_RESPONSES.MISSING_MESSAGE }, { status: 400 });
+    }
     if (model && model !== this.state.model) {
       this.setState({ ...this.state, model });
       this.chatHandler?.updateModel(model);
@@ -62,6 +70,8 @@ export class ChatAgent extends Agent<Env, ChatState> {
             });
             const assistantMessage = createMessage('assistant', response.content);
             this.setState({ ...this.state, messages: [...this.state.messages, assistantMessage], isProcessing: false });
+          } catch (err) {
+            console.error('Stream processing error in Agent:', err);
           } finally {
             writer.close();
           }
@@ -74,6 +84,7 @@ export class ChatAgent extends Agent<Env, ChatState> {
       return Response.json({ success: true, data: this.state });
     } catch (error) {
       this.setState({ ...this.state, isProcessing: false });
+      console.error('Non-stream processing error in Agent:', error);
       return Response.json({ success: false, error: API_RESPONSES.PROCESSING_ERROR }, { status: 500 });
     }
   }

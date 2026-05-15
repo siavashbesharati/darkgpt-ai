@@ -2,23 +2,29 @@ import { Hono } from "hono";
 import { getAgentByName } from 'agents';
 import { ChatAgent } from './agent';
 import { API_RESPONSES } from './config';
-import { Env, getAppController, registerSession, unregisterSession } from "./core-utils";
+import { Env, getAppController } from "./core-utils";
 export function coreRoutes(app: Hono<{ Bindings: Env }>) {
     app.all('/api/chat/:sessionId/*', async (c) => {
         try {
             const sessionId = c.req.param('sessionId');
-            const userId = c.req.header('X-User-Id');
-            if (!userId) return c.json({ success: false, error: 'Unauthorized' }, 401);
+            const token = c.req.header('Authorization');
+            if (!token) {
+                return c.json({ success: false, error: 'Unauthorized' }, 401);
+            }
             const agent = await getAgentByName<Env, ChatAgent>(c.env.CHAT_AGENT, sessionId);
             const url = new URL(c.req.url);
             url.pathname = url.pathname.replace(`/api/chat/${sessionId}`, '');
             const newReq = new Request(url.toString(), {
                 method: c.req.method,
-                headers: { ...c.req.header(), 'X-User-Id': userId },
+                headers: { 
+                  ...c.req.header(), 
+                  'Authorization': token 
+                },
                 body: c.req.method === 'GET' || c.req.method === 'DELETE' ? undefined : c.req.raw.body
             });
             return agent.fetch(newReq);
         } catch (error) {
+            console.error('Agent routing error:', error);
             return c.json({ success: false, error: API_RESPONSES.AGENT_ROUTING_FAILED }, 500);
         }
     });

@@ -35,6 +35,11 @@ interface AppState {
   upgradeTier: (tier: Tier) => Promise<void>;
   updateSettings: (settings: Partial<SystemSettings>) => void;
 }
+/**
+ * NOTE: Primary credit consumption occurs on the backend AI Agent (worker/agent.ts)
+ * during chat requests to prevent bypass. consumeCredit action here is used for 
+ * manual synchronization or UI-driven usage tracking.
+ */
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -79,7 +84,7 @@ export const useStore = create<AppState>()(
           });
           const json = await res.json();
           if (json.success) {
-            await get().refreshUser(); // Sync state
+            await get().refreshUser();
             return true;
           }
           return false;
