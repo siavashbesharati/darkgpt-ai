@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Message } from '../../../worker/types';
+import { useTheme } from '@/hooks/use-theme';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +29,7 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { isDark } = useTheme();
   const userCredits = useStore(s => s.user?.credits ?? 0);
   const token = useStore(s => s.token);
   const refreshUser = useStore(s => s.refreshUser);
@@ -91,11 +93,6 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
           toolCalls: []
         }]);
         await refreshUser();
-      } else if (result.error === 'OUT_OF_CREDITS') {
-        toast.error("Out of credits", {
-          description: "Upgrade your plan to keep building.",
-          action: { label: "Pricing", onClick: () => navigate('/pricing') }
-        });
       } else {
         toast.error("Generation Failed", { description: result.error });
       }
@@ -113,37 +110,31 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
       toast.success("Workspace cleared");
     }
   };
-  const suggestions = [
-    "Build a responsive landing page for a SaaS",
-    "Create a glassmorphic dashboard with Tailwind",
-    "Write a TypeScript hook for local storage",
-    "Design a dark-themed login form"
-  ];
   return (
-    <div className="flex flex-col h-full bg-slate-950">
-      <div className="p-4 border-b border-white/5 flex items-center justify-between bg-slate-900/30">
+    <div className="flex flex-col h-full bg-background border-r border-border">
+      <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30">
         <div className="flex items-center gap-2">
-          <Bot className="w-5 h-5 text-cyan-400" />
-          <span className="font-semibold text-sm">Aether Engine</span>
+          <Bot className="w-5 h-5 text-primary" />
+          <span className="font-bold text-sm text-foreground">Aether Engine</span>
         </div>
         <div className="flex items-center gap-2">
-           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{userCredits} Credits</span>
+           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{userCredits} Credits</span>
            <AlertDialog>
              <AlertDialogTrigger asChild>
-               <Button variant="ghost" size="icon" className="text-slate-500 hover:text-red-400 h-8 w-8">
+               <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive h-8 w-8">
                  <Trash2 className="w-4 h-4" />
                </Button>
              </AlertDialogTrigger>
-             <AlertDialogContent className="bg-slate-900 border-white/10 text-white">
+             <AlertDialogContent className="bg-popover border-border text-foreground">
                <AlertDialogHeader>
                  <AlertDialogTitle>Clear Workspace?</AlertDialogTitle>
-                 <AlertDialogDescription className="text-slate-400">
+                 <AlertDialogDescription className="text-muted-foreground">
                    This will delete all messages in this session. This action cannot be undone.
                  </AlertDialogDescription>
                </AlertDialogHeader>
                <AlertDialogFooter>
-                 <AlertDialogCancel className="bg-slate-800 border-white/5 hover:bg-slate-700">Cancel</AlertDialogCancel>
-                 <AlertDialogAction onClick={handleClear} className="bg-red-500 hover:bg-red-600">Clear</AlertDialogAction>
+                 <AlertDialogCancel className="border-border">Cancel</AlertDialogCancel>
+                 <AlertDialogAction onClick={handleClear} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Clear</AlertDialogAction>
                </AlertDialogFooter>
              </AlertDialogContent>
            </AlertDialog>
@@ -153,42 +144,35 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
         <div className="space-y-6 max-w-2xl mx-auto">
           {messages.length === 0 && (
             <div className="py-12 flex flex-col items-center text-center space-y-6">
-              <div className="p-4 rounded-3xl bg-cyan-500/10 text-cyan-400 ring-1 ring-cyan-500/20">
+              <div className="p-4 rounded-3xl bg-muted text-primary border border-border">
                 <Sparkles className="w-10 h-10" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-xl font-bold text-slate-200">How can I help you build?</h3>
-                <p className="text-slate-500 text-sm max-w-xs mx-auto">Select a quick-start prompt or describe your project below.</p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
-                {suggestions.map((s, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setInput(s)}
-                    className="p-3 text-left text-xs font-medium bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-cyan-500/50 transition-all text-slate-300"
-                  >
-                    {s}
-                  </button>
-                ))}
+                <h3 className="text-xl font-bold text-foreground">What shall we build today?</h3>
+                <p className="text-muted-foreground text-sm max-w-xs mx-auto">Describe your vision or pick a quick start prompt below.</p>
               </div>
             </div>
           )}
           {messages.map((m, i) => (
             <div key={m.id || i} className={cn(
-              "group flex flex-col gap-2 transition-all",
+              "flex flex-col gap-2",
               m.role === 'user' ? "items-end" : "items-start"
             )}>
               <div className={cn(
-                "flex gap-4 p-4 rounded-2xl max-w-[90%]",
-                m.role === 'user' ? "bg-cyan-500/10 border border-cyan-500/20" : "bg-white/5 border border-white/5"
+                "flex gap-4 p-4 rounded-2xl max-w-[95%] border",
+                m.role === 'user' ? "bg-primary text-primary-foreground border-primary" : "bg-card text-foreground border-border"
               )}>
                 <div className={cn(
                   "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-1",
-                  m.role === 'user' ? "bg-cyan-500 text-slate-950" : "bg-violet-500/20 text-violet-400"
+                  m.role === 'user' ? "bg-primary-foreground text-primary" : "bg-muted text-primary"
                 )}>
                   {m.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                 </div>
-                <div className="flex-1 text-sm leading-relaxed overflow-hidden prose prose-invert prose-sm max-w-none">
+                <div className={cn(
+                  "flex-1 text-sm leading-relaxed prose prose-sm max-w-none",
+                  isDark ? "prose-invert" : "prose-slate",
+                  m.role === 'user' && "text-primary-foreground"
+                )}>
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {m.content}
                   </ReactMarkdown>
@@ -198,37 +182,37 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
           ))}
           {isLoading && (
             <div className="flex gap-4 p-4">
-              <div className="w-7 h-7 rounded-lg bg-violet-500/20 text-violet-400 flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-lg bg-muted text-primary flex items-center justify-center shrink-0">
                 <Loader2 className="w-4 h-4 animate-spin" />
               </div>
               <div className="flex-1 animate-pulse space-y-2 py-2">
-                <div className="h-2 bg-slate-800 rounded w-3/4" />
-                <div className="h-2 bg-slate-800 rounded w-1/2" />
+                <div className="h-2 bg-muted rounded w-3/4" />
+                <div className="h-2 bg-muted rounded w-1/2" />
               </div>
             </div>
           )}
           <div ref={scrollRef} />
         </div>
       </ScrollArea>
-      <div className="p-4 bg-slate-950/80 backdrop-blur-md border-t border-white/5 space-y-3">
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/5 border border-amber-500/10">
-          <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
-          <p className="text-[10px] text-amber-500/80 font-medium leading-tight">
-            Important: AI generation limits apply across all user apps in a given time period.
+      <div className="p-4 bg-background/95 backdrop-blur border-t border-border space-y-3">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted border border-border">
+          <AlertCircle className="w-3.5 h-3.5 text-primary" />
+          <p className="text-[10px] text-muted-foreground font-bold leading-tight uppercase tracking-widest">
+            Shared AI Resource limits apply.
           </p>
         </div>
         <form onSubmit={handleSubmit} className="relative">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type a command or describe a feature..."
-            className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3.5 pr-12 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all placeholder:text-slate-600 text-sm text-slate-200"
+            placeholder="Describe your next project feature..."
+            className="w-full bg-background border border-border rounded-xl px-4 py-3.5 pr-12 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground text-sm text-foreground shadow-sm"
           />
           <Button
             type="submit"
             disabled={isLoading || !input.trim()}
             size="icon"
-            className="absolute right-1.5 top-1.5 h-10 w-10 bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all disabled:bg-slate-800"
+            className="absolute right-1.5 top-1.5 h-10 w-10 bg-primary text-primary-foreground hover:bg-primary/90 transition-all disabled:opacity-30"
           >
             <Send className="w-4 h-4" />
           </Button>
