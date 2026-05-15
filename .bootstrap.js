@@ -82,7 +82,8 @@ function runSetupCommands() {
     "bun add react-markdown@^9.0.1",
     "bun add remark-gfm@^4.0.0",
     "bun add qrcode.react@^3.1.0",
-    "bun add lucide-react framer-motion zustand"
+    "bun add lucide-react framer-motion zustand",
+    "bun add lucide-react@latest"
 ];
     
     if (commands.length === 0) {
