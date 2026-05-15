@@ -51,7 +51,7 @@ export function CryptoPaymentModal({ planName, open, onOpenChange }: CryptoPayme
       }, 4000);
       return () => clearTimeout(timer);
     }
-  }, [step, planName, selectedAsset]);
+  }, [step, planName, selectedAsset, addTransaction, upgradeTier]);
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.info("Wallet address copied");
@@ -59,7 +59,6 @@ export function CryptoPaymentModal({ planName, open, onOpenChange }: CryptoPayme
   const getQRValue = () => {
     const addr = activeTonAddress || "";
     const amount = planName === 'Pro' ? 29 : 99;
-    // Basic TON URI scheme
     return `ton://transfer/${addr}?amount=${amount * 1000000000}&text=AetherCode_${planName}`;
   };
   return (
@@ -175,7 +174,7 @@ export function CryptoPaymentModal({ planName, open, onOpenChange }: CryptoPayme
             )}
           </div>
         </div>
-      </div>
+      </DialogContent>
     </Dialog>
   );
 }
