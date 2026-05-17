@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Bot, User, Loader2, ShieldAlert, Trash2, AlertCircle, Terminal, Lock, Rocket } from 'lucide-react';
+import { Send, Bot, User, Loader2, ShieldAlert, Trash2, AlertCircle, Terminal, Lock, Rocket, Zap } from 'lucide-react';
 import { chatService } from '@/lib/chat';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -42,6 +42,7 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
   const { isDark } = useTheme();
   const currentSessionId = useStore(s => s.currentSessionId);
   const userCredits = useStore(s => s.user?.credits ?? 0);
+  const userTier = useStore(s => s.user?.tier ?? 'Free');
   const token = useStore(s => s.token);
   const refreshUser = useStore(s => s.refreshUser);
   const logout = useStore(s => s.logout);
@@ -158,7 +159,13 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
           </span>
         </div>
         <div className="flex items-center gap-2">
-           <span className="text-[10px] font-black text-red-600 uppercase tracking-widest">{userCredits} POWER</span>
+           <Badge variant="outline" className="bg-red-600/5 text-red-600 border-red-600/20 gap-1.5 px-2 py-0.5">
+             <Zap className="w-3 h-3 fill-red-600" />
+             <span className="text-[10px] font-black uppercase tracking-widest">{userCredits} POWER</span>
+           </Badge>
+           <Badge variant="secondary" className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5">
+             {userTier}
+           </Badge>
            {currentSessionId && (
              <AlertDialog>
                <AlertDialogTrigger asChild>
@@ -255,10 +262,10 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
         </div>
       </ScrollArea>
       <div className="p-4 bg-background/95 backdrop-blur border-t border-border space-y-3">
-        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-600/5 border border-red-600/20">
-          <AlertCircle className="w-3.5 h-3.5 text-red-600" />
-          <p className="text-[10px] text-red-600 font-black leading-tight uppercase tracking-[0.1em]">
-            KERNEL STATUS: DARKCORE 2.0 ORACLE IS CURRENTLY SYNTHESIZING.
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-600/5 border border-red-600/10">
+          <AlertCircle className="w-3 h-3 text-red-600" />
+          <p className="text-[10px] text-red-600 font-black leading-tight uppercase tracking-widest">
+            KERNEL STATUS: SYNTHESIZING ACTIVE
           </p>
         </div>
         <form onSubmit={handleSubmit} className="relative">

@@ -274,12 +274,9 @@ export const useStore = create<AppState>()(
         isAuthenticated: state.isAuthenticated,
         transactions: state.transactions,
         currentSessionId: state.currentSessionId,
-        settings: {
-          freeTierLimit: state.settings.freeTierLimit,
-          proTierLimit: state.settings.proTierLimit,
-          maxTierLimit: state.settings.maxTierLimit,
-          telegramId: state.settings.telegramId
-        }
+        settings: state.settings,
+        packages: state.packages,
+        prompts: state.prompts
       })
     }
   )

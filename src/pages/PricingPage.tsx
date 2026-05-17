@@ -14,12 +14,14 @@ export function PricingPage() {
   const [loading, setLoading] = useState(packages.length === 0);
   useEffect(() => {
     const init = async () => {
-      setLoading(true);
-      await fetchPackages();
-      setLoading(false);
+      if (packages.length === 0) {
+        setLoading(true);
+        await fetchPackages();
+        setLoading(false);
+      }
     };
     init();
-  }, [fetchPackages]);
+  }, [fetchPackages, packages.length]);
   const getIcon = (name: string) => {
     const lower = name.toLowerCase();
     if (lower.includes('pro')) return Rocket;
@@ -52,10 +54,15 @@ export function PricingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
             {packages.map((pkg, i) => {
               const Icon = getIcon(pkg.name);
-              let displayFeatures = pkg.features;
-              if (pkg.name === 'Free') displayFeatures = ['10 basic scans/day', 'Standard speed', 'Community intelligence', 'Public audit log'];
-              if (pkg.name === 'Pro') displayFeatures = ['1,000 Power units', 'Advanced Exploitation Tools', 'Private Security Audits', 'Fast DarkCore Access', '24/7 Priority Tunnel'];
-              if (pkg.name === 'Max') displayFeatures = ['10,000 Power units', 'Full Penetration Suite', 'Zero-Day Research Support', 'Team Collaboration', 'Alpha API Endpoints'];
+              // Prioritize dynamic features if they exist
+              let displayFeatures = pkg.features && pkg.features.length > 0 ? pkg.features : [];
+              // Only use fallback if empty
+              if (displayFeatures.length === 0) {
+                if (pkg.name === 'Free') displayFeatures = ['10 basic scans/day', 'Standard speed', 'Community intelligence', 'Public audit log'];
+                else if (pkg.name === 'Pro') displayFeatures = ['1,000 Power units', 'Advanced Exploitation Tools', 'Private Security Audits', 'Fast DarkCore Access', '24/7 Priority Tunnel'];
+                else if (pkg.name === 'Max') displayFeatures = ['10,000 Power units', 'Full Penetration Suite', 'Zero-Day Research Support', 'Team Collaboration', 'Alpha API Endpoints'];
+                else displayFeatures = ['Standard Engine Access', 'Security Research Tools'];
+              }
               return (
                 <motion.div
                   key={pkg.id}
@@ -80,7 +87,7 @@ export function PricingPage() {
                       <span className="text-5xl font-black tracking-tighter">${pkg.price}</span>
                       <span className="text-muted-foreground font-black uppercase text-xs tracking-widest">/cycle</span>
                     </div>
-                    <p className="text-muted-foreground mt-3 text-sm font-bold uppercase tracking-tight">{pkg.name === 'Free' ? 'Basic Recon' : pkg.description}</p>
+                    <p className="text-muted-foreground mt-3 text-sm font-bold uppercase tracking-tight">{pkg.description}</p>
                   </div>
                   <ul className="space-y-4 mb-12 flex-1">
                     {displayFeatures.map((feature, j) => (

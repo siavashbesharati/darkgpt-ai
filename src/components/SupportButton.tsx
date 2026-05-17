@@ -13,7 +13,7 @@ export function SupportButton() {
   if (!telegramId) return null;
   const telegramLink = `https://t.me/${telegramId.replace('@', '')}`;
   return (
-    <div className="fixed bottom-6 right-6 z-[100]">
+    <div className="fixed bottom-8 left-8 z-[100]">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -32,7 +32,7 @@ export function SupportButton() {
               <Send className="w-6 h-6 relative z-10 group-hover:rotate-12 transition-transform" />
             </motion.a>
           </TooltipTrigger>
-          <TooltipContent side="left" className="bg-background border-border text-foreground font-black uppercase text-[10px] tracking-widest px-4 py-2">
+          <TooltipContent side="right" className="bg-background border-border text-foreground font-black uppercase text-[10px] tracking-widest px-4 py-2 ml-2">
             Contact Command
           </TooltipContent>
         </Tooltip>

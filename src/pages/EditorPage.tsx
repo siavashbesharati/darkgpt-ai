@@ -36,14 +36,14 @@ export function EditorPage() {
               <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
                 <div className="flex items-center justify-between px-4 py-1.5 border-b border-border bg-muted/20">
                   <TabsList className="bg-transparent border-none p-0 h-9 gap-1">
-                    <TabsTrigger 
-                      value="console" 
+                    <TabsTrigger
+                      value="console"
                       className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-[10px] font-black uppercase tracking-widest px-4 h-7 rounded-lg"
                     >
                       <Terminal className="w-3 h-3 mr-2" /> Console
                     </TabsTrigger>
-                    <TabsTrigger 
-                      value="library" 
+                    <TabsTrigger
+                      value="library"
                       className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-[10px] font-black uppercase tracking-widest px-4 h-7 rounded-lg"
                     >
                       <Library className="w-3 h-3 mr-2" /> Library
@@ -87,7 +87,7 @@ export function EditorPage() {
           </ResizablePanelGroup>
         </main>
       </div>
-      <Toaster richColors position="bottom-right" />
+      <Toaster richColors position="top-right" />
     </AppLayout>
   );
 }
