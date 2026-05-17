@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, User, Loader2, ShieldAlert, Trash2, AlertCircle, Terminal, Lock, Rocket, Zap, Copy, Check } from 'lucide-react';
+import { Send, User, Loader2, ShieldAlert, Trash2, AlertCircle, Terminal, Lock, Rocket, Zap, Copy, AlertTriangle } from 'lucide-react';
 import { chatService } from '@/lib/chat';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -28,8 +28,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-  DialogFooter
+  DialogDescription
 } from "@/components/ui/dialog";
 interface ChatInterfaceProps {
   onStreamUpdate: (text: string) => void;
@@ -236,11 +235,11 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
             </div>
           ))}
           {isLoading && (
-            <div className="flex gap-4 p-4 items-center">
+            <div className="flex gap-4 p-4 items-center justify-center">
               <div className="w-7 h-7 rounded-md bg-black border border-red-900 text-red-500 flex items-center justify-center shrink-0">
                 <Loader2 className="w-4 h-4 animate-spin" />
               </div>
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5 items-center">
                 <span className="text-[10px] font-black uppercase text-red-600 animate-pulse">
                   {THINKING_MESSAGES[thinkingIdx]}
                 </span>
@@ -276,6 +275,12 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
             <Send className="w-4 h-4" />
           </Button>
         </form>
+        <div className="flex items-center justify-center gap-2 pt-1 opacity-60">
+          <AlertTriangle className="w-3 h-3 text-muted-foreground" />
+          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
+            AI SERVICE NOTICE: Platform-wide request limits enforced across all active sessions.
+          </p>
+        </div>
       </div>
       <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
         <DialogContent className="sm:max-w-[440px] bg-slate-950 border-white/10 text-white overflow-hidden p-0">

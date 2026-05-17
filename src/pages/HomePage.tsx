@@ -1,11 +1,14 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, ArrowRight, Shield, Zap, Terminal, Cpu, Layers, Lock, AlertTriangle } from 'lucide-react';
+import { Shield, Zap, Terminal, Cpu, Lock, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Navbar } from '@/components/layout/Navbar';
 import { motion } from 'framer-motion';
+import { useStore } from '@/lib/store';
 export function HomePage() {
   const securityTerms = ["Kali", "Metasploit", "OWASP", "BurpSuite", "Wireshark", "Nmap", "RedTeam", "BlueTeam"];
+  const telegramId = useStore(s => s.settings.telegramId);
+  const telegramLink = telegramId ? `https://t.me/${telegramId.replace('@', '')}` : '#';
   useEffect(() => {
     document.title = 'DARK GPT | Tactical Intelligence Workspace';
   }, []);
@@ -142,7 +145,7 @@ export function HomePage() {
             <div className="flex justify-center gap-8 mb-4">
               <Link to="/pricing" className="text-xs font-black uppercase text-muted-foreground hover:text-primary transition-colors">Tiers</Link>
               <Link to="/editor" className="text-xs font-black uppercase text-muted-foreground hover:text-primary transition-colors">Workspace</Link>
-              <span className="text-xs font-black uppercase text-muted-foreground opacity-50">Support</span>
+              <a href={telegramLink} target="_blank" rel="noopener noreferrer" className="text-xs font-black uppercase text-muted-foreground hover:text-primary transition-colors">Support Channel</a>
             </div>
             <p className="text-muted-foreground text-[10px] font-black uppercase tracking-widest">© 2024 DARK GPT Research Group. Access Controlled.</p>
             <div className="max-w-3xl mx-auto p-8 rounded-[2.5rem] bg-red-600/5 border border-red-600/20 text-left relative overflow-hidden shadow-sm">

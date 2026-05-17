@@ -86,14 +86,15 @@
   100% { transform: translateY(100%); }
 }
 @keyframes terminal-flicker {
-  0% { opacity: 0.1; }
-  50% { opacity: 0.15; }
-  100% { opacity: 0.1; }
+  0% { opacity: 0.04; }
+  50% { opacity: 0.08; }
+  100% { opacity: 0.04; }
 }
 @layer utilities {
   .glitch-text {
     position: relative;
     display: inline-block;
+    pointer-events: auto;
   }
   .glitch-text:hover {
     animation: glitch 0.2s cubic-bezier(.25,.46,.45,.94) both infinite;
@@ -107,13 +108,14 @@
     background: linear-gradient(
       to bottom,
       transparent 0%,
-      rgba(220, 38, 38, 0.05) 50%,
+      rgba(220, 38, 38, 0.03) 50%,
       transparent 100%
     );
     background-size: 100% 4px;
     z-index: 50;
     pointer-events: none;
-    animation: scanline 8s linear infinite;
+    animation: scanline 10s linear infinite;
+    will-change: transform;
   }
   .terminal-flicker {
     position: relative;
@@ -122,10 +124,11 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: rgba(15, 23, 42, 0.05);
+    background: rgba(15, 23, 42, 0.03);
     pointer-events: none;
     z-index: 40;
-    animation: terminal-flicker 0.1s infinite;
+    animation: terminal-flicker 0.15s infinite;
+    will-change: opacity;
   }
 }
 * {
