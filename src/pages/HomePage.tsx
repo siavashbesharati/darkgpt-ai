@@ -1,26 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, ArrowRight, Code2, ShieldCheck, Zap, Globe, Cpu, Layers } from 'lucide-react';
+import { Sparkles, ArrowRight, Shield, Zap, Terminal, Cpu, Layers, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Navbar } from '@/components/layout/Navbar';
 import { motion } from 'framer-motion';
 export function HomePage() {
-  const frameworks = ["React", "Vue", "TypeScript", "Tailwind", "Vite", "Cloudflare"];
+  const securityTerms = ["Kali", "Metasploit", "OWASP", "BurpSuite", "Wireshark", "Nmap", "RedTeam", "BlueTeam"];
+  useEffect(() => {
+    document.title = 'DARK GPT | Ethical Hacking Workspace';
+  }, []);
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 overflow-x-hidden">
       <Navbar />
       {/* Hero Section */}
       <div className="relative pt-24 pb-32">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(0,0,0,0.05),transparent_50%)] dark:bg-[radial-gradient(circle_at_50%_-20%,rgba(255,255,255,0.05),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(0,0,0,0.1),transparent_50%)] dark:bg-[radial-gradient(circle_at_50%_-20%,rgba(255,255,255,0.05),transparent_50%)]" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-muted border border-border text-foreground text-xs font-bold uppercase tracking-widest mb-8"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-muted border border-border text-foreground text-xs font-black uppercase tracking-[0.2em] mb-8"
           >
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span>Next-Gen AI Workspace</span>
+            <Lock className="w-3.5 h-3.5 text-primary" />
+            <span>Operational Security Intelligence</span>
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
@@ -28,18 +31,18 @@ export function HomePage() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-6xl md:text-8xl font-display font-black tracking-tighter leading-[0.9] mb-8"
           >
-            CODE AT THE <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-violet-600 to-fuchsia-600 dark:from-cyan-400 dark:via-violet-400 dark:to-fuchsia-400">
-              SPEED OF LIGHT.
+            ORCHESTRATE EXPLOITS. <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-zinc-800 to-black dark:from-red-500 dark:via-zinc-400 dark:to-white">
+              DEFEND THE CORE.
             </span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-12"
+            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-12 font-medium"
           >
-            AetherCode AI combines deep intelligence with a premium IDE to help you ship production-grade code in minutes, not days.
+            DARK GPT is the ultimate AI arsenal for security researchers and ethical hackers. Build penetration testing tools and audit architecture at machine speed.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -47,13 +50,13 @@ export function HomePage() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-24"
           >
-            <Button asChild size="lg" className="h-14 px-10 text-lg font-bold bg-primary text-primary-foreground hover:scale-105 transition-all rounded-2xl shadow-xl">
+            <Button asChild size="lg" className="h-14 px-10 text-lg font-black bg-primary text-primary-foreground hover:scale-105 transition-all rounded-2xl shadow-xl uppercase tracking-widest">
               <Link to="/editor" className="flex items-center gap-2">
-                Start Building <ArrowRight className="w-5 h-5" />
+                Initialize Ops <Terminal className="w-5 h-5" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="h-14 px-10 text-lg font-bold border-border bg-background hover:bg-muted transition-all rounded-2xl">
-              <Link to="/pricing">View Tiers</Link>
+            <Button asChild variant="outline" size="lg" className="h-14 px-10 text-lg font-bold border-border bg-background hover:bg-muted transition-all rounded-2xl uppercase tracking-widest">
+              <Link to="/pricing">Power Tiers</Link>
             </Button>
           </motion.div>
           <motion.div
@@ -62,25 +65,25 @@ export function HomePage() {
             transition={{ duration: 1, delay: 0.4 }}
             className="relative mx-auto max-w-5xl"
           >
-            <div className="rounded-2xl border border-border bg-card shadow-2xl overflow-hidden aspect-video relative group">
-              <div className="h-10 bg-muted/80 border-b border-border flex items-center px-4 gap-2">
+            <div className="rounded-2xl border border-border bg-black shadow-2xl overflow-hidden aspect-video relative group border-t-4 border-t-red-600">
+              <div className="h-10 bg-zinc-900 border-b border-zinc-800 flex items-center px-4 gap-2">
                 <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-red-400" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                  <div className="w-3 h-3 rounded-full bg-green-400" />
+                  <div className="w-3 h-3 rounded-full bg-zinc-700" />
+                  <div className="w-3 h-3 rounded-full bg-zinc-700" />
+                  <div className="w-3 h-3 rounded-full bg-zinc-700" />
                 </div>
-                <div className="ml-4 px-3 py-1 rounded bg-background text-[10px] text-muted-foreground font-mono">
-                  aether-workspace-v2
+                <div className="ml-4 px-3 py-1 rounded bg-black text-[10px] text-red-500 font-mono font-bold uppercase tracking-widest">
+                  dark-gpt-kernel-v4
                 </div>
               </div>
-              <div className="p-8 text-left font-mono text-sm text-foreground space-y-3">
-                <p className="text-blue-500 dark:text-cyan-400 flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-current animate-pulse" /> Connecting to Aether Engine...</p>
+              <div className="p-8 text-left font-mono text-sm text-zinc-300 space-y-3 bg-gradient-to-b from-black to-zinc-950">
+                <p className="text-red-500 flex items-center gap-2 font-bold"><span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" /> Establishing Secure Tunnel...</p>
                 <div className="pl-4 space-y-1">
-                  <p><span className="text-violet-500">async function</span> <span className="text-yellow-600 dark:text-yellow-400">deployVision</span>() {'{'}</p>
-                  <p className="pl-4 text-muted-foreground">// Processing prompt: "Build a high-conv crypto landing page"</p>
-                  <p className="pl-4"><span className="text-blue-500 dark:text-cyan-400">const</span> result = <span className="text-violet-500">await</span> engine.<span className="text-yellow-600 dark:text-yellow-400">generate</span>();</p>
-                  <p className="pl-4 text-emerald-600 dark:text-emerald-400">return result.preview();</p>
-                  <p>{'}'}</p>
+                  <p><span className="text-zinc-500"># Initializing Payload Generator</span></p>
+                  <p><span className="text-red-400">await</span> DarkCore.<span className="text-white">scan</span>(target_url);</p>
+                  <p className="pl-4 text-zinc-500">// Vulnerability found: SQL Injection (Blind)</p>
+                  <p className="pl-4 text-red-500 font-bold">>>> Generating POC exploit...</p>
+                  <p className="text-emerald-500">[SUCCESS] Exploit logic verified.</p>
                 </div>
               </div>
             </div>
@@ -89,7 +92,7 @@ export function HomePage() {
       </div>
       <div className="py-10 border-y border-border bg-muted/30 overflow-hidden relative">
         <div className="flex gap-20 whitespace-nowrap animate-marquee px-4">
-          {[...frameworks, ...frameworks].map((f, i) => (
+          {[...securityTerms, ...securityTerms].map((f, i) => (
             <span key={i} className="text-2xl font-display font-black tracking-tighter italic text-muted-foreground/30 hover:text-primary transition-colors cursor-default">
               {f.toUpperCase()}
             </span>
@@ -100,17 +103,17 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {[
-              { icon: Zap, title: "Edge Streaming", desc: "Real-time code generation powered by Cloudflare Workers." },
-              { icon: ShieldCheck, title: "On-Chain Tiers", desc: "Native crypto payments with BTC, ETH, and Solana." },
-              { icon: Cpu, title: "Elite Models", desc: "Access Gemini 2.0 and Pro models for maximum precision." },
-              { icon: Layers, title: "Multi-Session", desc: "Organize infinite projects with persistent history." }
+              { icon: Terminal, title: "Vulnerability Analysis", desc: "Deep-trace logic scanning to find hidden entry points in modern architectures." },
+              { icon: Shield, title: "Payload Generation", desc: "Instant synthesis of Proof-of-Concept exploits for authorized security testing." },
+              { icon: Cpu, title: "Network Auditing", desc: "Intelligent packet and flow analysis powered by specialized DarkCore LLMs." },
+              { icon: Lock, title: "On-Chain Security", desc: "Audit smart contracts for reentrancy, overflow, and logic flaws in real-time." }
             ].map((f, i) => (
               <motion.div
                 key={i}
                 whileHover={{ y: -5 }}
-                className="p-8 rounded-3xl border border-border bg-card hover:border-primary/50 transition-all group"
+                className="p-8 rounded-3xl border border-border bg-card hover:border-red-500/50 transition-all group"
               >
-                <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mb-6 group-hover:bg-red-600 group-hover:text-white transition-all">
                   <f.icon className="w-6 h-6 text-primary group-hover:text-inherit" />
                 </div>
                 <h3 className="text-lg font-bold mb-2">{f.title}</h3>
@@ -122,25 +125,14 @@ export function HomePage() {
       </section>
       <footer className="py-24 border-t border-border bg-card">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-6 mb-12 grayscale opacity-40 hover:opacity-100 transition-opacity duration-500">
-             <div className="flex flex-col items-center gap-2">
-               <img src="https://cryptologos.cc/logos/toncoin-ton-logo.png" className="h-8" alt="TON" />
-               <span className="text-[8px] font-black uppercase tracking-tighter">TON Network</span>
-             </div>
-             <div className="w-px h-8 bg-border" />
-             <div className="flex flex-col items-center gap-2">
-               <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" className="h-8" alt="USDT" />
-               <span className="text-[8px] font-black uppercase tracking-tighter">USDT Jetton</span>
-             </div>
-          </div>
           <div className="space-y-8">
-            <p className="text-muted-foreground text-sm font-medium">© 2024 AetherCode AI. Securely Orchestrated on Cloudflare.</p>
-            <div className="max-w-2xl mx-auto p-6 rounded-[2rem] bg-muted/50 border border-border inline-block shadow-sm">
-              <p className="text-[10px] text-primary font-black uppercase tracking-[0.2em] mb-3">Mandatory Technical Disclosure</p>
+            <p className="text-muted-foreground text-sm font-medium">© 2024 DARK GPT Security Research Group.</p>
+            <div className="max-w-2xl mx-auto p-6 rounded-[2rem] bg-red-600/5 border border-red-600/20 inline-block shadow-sm">
+              <p className="text-[10px] text-red-600 dark:text-red-400 font-black uppercase tracking-[0.2em] mb-3">Mandatory Ethical Disclosure</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                AetherCode AI utilizes high-performance shared compute resources. To ensure equitable access for all developers, 
-                system-wide limits apply to the number of AI requests processed per time period. Verification of 
-                premium access is managed via the TON blockchain protocol.
+                DARK GPT is a specialized cybersecurity research platform. All generated payloads, scanning logic, and 
+                vulnerability research must be conducted strictly within authorized, sandboxed environments. 
+                Users are solely responsible for compliance with international and local cyber laws.
               </p>
             </div>
           </div>

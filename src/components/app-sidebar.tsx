@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { MessageSquarePlus, Trash2, Code2, Zap, History, Edit2, Check, X } from "lucide-react";
+import { Shield, MessageSquarePlus, Trash2, History, Edit2, Check, X, Zap, Lock, Terminal } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -48,13 +48,13 @@ export function AppSidebar(): JSX.Element {
   const handleNewChat = () => {
     const newId = crypto.randomUUID();
     setCurrentSessionId(newId);
-    toast.info("New workspace initialized");
+    toast.info("Target initialized. Standing by.");
   };
   const handleDeleteSession = async () => {
     if (!deleteConfirmId) return;
     const res = await chatService.deleteSession(deleteConfirmId);
     if (res.success) {
-      toast.success("Workspace archived");
+      toast.success("Operational data purged.");
       if (deleteConfirmId === currentSessionId) {
         setCurrentSessionId(null);
       }
@@ -69,7 +69,7 @@ export function AppSidebar(): JSX.Element {
     }
     const res = await chatService.updateSessionTitle(id, editTitle.trim());
     if (res.success) {
-      toast.success("Workspace renamed");
+      toast.success("Engagement re-labeled.");
       loadSessions();
     }
     setEditingId(null);
@@ -79,18 +79,18 @@ export function AppSidebar(): JSX.Element {
       <SidebarHeader className="p-4 border-b border-border bg-sidebar/50">
         <div className="flex items-center gap-2 mb-4">
           <div className="p-1.5 rounded-lg bg-primary">
-            <Code2 className="w-5 h-5 text-primary-foreground" />
+            <Shield className="w-5 h-5 text-primary-foreground" />
           </div>
-          <span className="font-display font-bold text-lg tracking-tight text-foreground">AetherCode</span>
+          <span className="font-display font-bold text-lg tracking-tight text-foreground uppercase italic">DARK GPT</span>
         </div>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={handleNewChat}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-sm h-11"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-black shadow-sm h-11 uppercase tracking-widest text-xs"
             >
-              <MessageSquarePlus className="w-4 h-4 mr-2" />
-              <span>New Workspace</span>
+              <Terminal className="w-4 h-4 mr-2" />
+              <span>Initialize Target</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -99,7 +99,7 @@ export function AppSidebar(): JSX.Element {
         <SidebarGroup>
           <SidebarGroupLabel className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 flex items-center gap-2 py-4">
             <History className="w-3 h-3" />
-            Workspace History
+            Active Engagements
           </SidebarGroupLabel>
           <SidebarMenu className="px-2 gap-1">
             {sessions.map((session) => (
@@ -114,7 +114,7 @@ export function AppSidebar(): JSX.Element {
                         if (e.key === 'Enter') handleRename(session.id);
                         if (e.key === 'Escape') setEditingId(null);
                       }}
-                      className="h-8 text-xs bg-background border-primary/30"
+                      className="h-8 text-xs bg-background border-primary/30 font-mono"
                     />
                     <button onClick={() => handleRename(session.id)} className="p-1 text-emerald-500 hover:bg-emerald-500/10 rounded">
                       <Check className="w-3.5 h-3.5" />
@@ -131,9 +131,9 @@ export function AppSidebar(): JSX.Element {
                       className="rounded-lg py-6 data-[active=true]:bg-primary/10 data-[active=true]:text-primary transition-all"
                     >
                       <div className="flex flex-col items-start gap-0.5 overflow-hidden">
-                        <span className="text-sm font-bold truncate w-full">{session.title}</span>
+                        <span className="text-sm font-bold truncate w-full font-mono">{session.title}</span>
                         <span className="text-[10px] text-muted-foreground font-medium">
-                          {new Date(session.lastActive).toLocaleDateString()}
+                          ENGAGEMENT DATE: {new Date(session.lastActive).toLocaleDateString()}
                         </span>
                       </div>
                     </SidebarMenuButton>
@@ -158,11 +158,6 @@ export function AppSidebar(): JSX.Element {
                 )}
               </SidebarMenuItem>
             ))}
-            {sessions.length === 0 && (
-              <div className="px-4 py-8 text-center">
-                <p className="text-[11px] text-muted-foreground font-medium">No projects saved yet.</p>
-              </div>
-            )}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
@@ -173,26 +168,26 @@ export function AppSidebar(): JSX.Element {
               <div className="p-1.5 rounded-full bg-primary/10">
                 <Zap className="w-3.5 h-3.5 text-primary" />
               </div>
-              <span className="text-xs font-bold text-foreground">{userCredits} Tokens</span>
+              <span className="text-xs font-bold text-foreground">{userCredits} POWER</span>
             </div>
-            <span className="text-[10px] font-black uppercase text-primary">{userTier}</span>
+            <span className="text-[10px] font-black uppercase text-red-600">{userTier}</span>
           </div>
-          <div className="text-[9px] text-muted-foreground px-2 leading-tight font-medium uppercase tracking-tighter opacity-70">
-            Resource limits verified by Aether Engine DO.
+          <div className="text-[9px] text-muted-foreground px-2 leading-tight font-black uppercase tracking-tighter opacity-70 flex items-center gap-1">
+            <Lock className="w-2.5 h-2.5" /> DarkCore v4 VERIFIED.
           </div>
         </div>
       </SidebarFooter>
       <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Archive Workspace?</AlertDialogTitle>
+            <AlertDialogTitle>Wipe engagement data?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete this conversation and its associated project snapshots.
+              This will permanently purge all research logs and snapshots associated with this target ID.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep Project</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteSession} className="bg-destructive hover:bg-destructive/90">Delete Forever</AlertDialogAction>
+            <AlertDialogCancel>Abort</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteSession} className="bg-destructive hover:bg-destructive/90">Wipe Data</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

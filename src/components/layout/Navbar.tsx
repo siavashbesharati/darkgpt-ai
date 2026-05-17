@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Code2, Zap, LayoutDashboard, LogOut, User as UserIcon, History } from 'lucide-react';
+import { Shield, Zap, LayoutDashboard, LogOut, User as UserIcon, History, Terminal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Badge } from '@/components/ui/badge';
@@ -32,10 +32,10 @@ export function Navbar({ showTrigger = false }: NavbarProps) {
           )}
           <Link to="/" className="flex items-center gap-2 group shrink-0">
             <div className="p-1.5 rounded-lg bg-primary">
-              <Code2 className="w-5 h-5 text-primary-foreground" />
+              <Shield className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-xl tracking-tight text-foreground">
-              AetherCode
+            <span className="font-display font-bold text-xl tracking-tight text-foreground uppercase italic">
+              DARK GPT
             </span>
           </Link>
           <div className="hidden md:flex items-center gap-1 ml-4">
@@ -43,20 +43,20 @@ export function Navbar({ showTrigger = false }: NavbarProps) {
               "px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2 transition-colors",
               location.pathname === '/editor' ? "text-primary bg-muted" : "text-muted-foreground hover:text-foreground"
             )}>
-              <History className="w-4 h-4" /> Workspace
+              <Terminal className="w-4 h-4" /> Operations
             </Link>
             <Link to="/pricing" className={cn(
               "px-4 py-2 text-sm font-medium rounded-md transition-colors",
               location.pathname === '/pricing' ? "text-primary bg-muted" : "text-muted-foreground hover:text-foreground"
             )}>
-              Pricing
+              Power Tiers
             </Link>
             {userIsAdmin && (
               <Link to="/admin" className={cn(
                 "px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2 transition-colors",
                 location.pathname === '/admin' ? "text-primary bg-muted" : "text-muted-foreground hover:text-foreground"
               )}>
-                <LayoutDashboard className="w-4 h-4" /> Admin
+                <LayoutDashboard className="w-4 h-4" /> Command
               </Link>
             )}
           </div>
@@ -80,25 +80,25 @@ export function Navbar({ showTrigger = false }: NavbarProps) {
                 <DropdownMenuContent align="end" className="w-56 mt-2 bg-popover border-border">
                   <DropdownMenuLabel className="flex flex-col">
                     <span className="text-sm font-bold truncate text-foreground">{userEmail}</span>
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{userTier} Member</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{userTier} Operator</span>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/editor" className="cursor-pointer">Workspace</Link>
+                    <Link to="/editor" className="cursor-pointer text-xs font-bold">ACTIVE OPS</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/pricing" className="cursor-pointer">Upgrade Plan</Link>
+                    <Link to="/pricing" className="cursor-pointer text-xs font-bold">UPGRADE CLEARANCE</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive cursor-pointer">
-                    <LogOut className="w-4 h-4 mr-2" /> Logout
+                    <LogOut className="w-4 h-4 mr-2" /> DISCONNECT
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           ) : (
             <Button onClick={() => setAuthOpen(true)} className="bg-primary text-primary-foreground font-bold rounded-full px-8 shadow-sm">
-              Launch
+              INITIALIZE
             </Button>
           )}
           <div className="border-l border-border pl-4 h-6 flex items-center">

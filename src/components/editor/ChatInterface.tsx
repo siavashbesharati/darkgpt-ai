@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Bot, User, Loader2, Sparkles, Trash2, AlertCircle, Terminal } from 'lucide-react';
+import { Send, Bot, User, Loader2, ShieldAlert, Trash2, AlertCircle, Terminal, Lock } from 'lucide-react';
 import { chatService } from '@/lib/chat';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -37,7 +37,6 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
   const logout = useStore(s => s.logout);
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
-  // Reactive History Loading
   useEffect(() => {
     const loadHistory = async () => {
       if (!currentSessionId || !token) {
@@ -45,7 +44,7 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
         onStreamUpdate("");
         return;
       }
-      setMessages([]); // Instant feedback
+      setMessages([]);
       const res = await chatService.getMessages(currentSessionId, token);
       if (res.success && res.data?.messages) {
         setMessages(res.data.messages);
@@ -69,13 +68,13 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
     if (!token) {
-      toast.error("Authentication required");
+      toast.error("Operator verification required");
       return;
     }
     if (userCredits <= 0) {
-      toast.error("Daily Token Limit Reached", {
-        description: "Your vision is growing faster than your credits. Upgrade to continue.",
-        action: { label: "View Pricing", onClick: () => navigate('/pricing') },
+      toast.error("Power Limit Exceeded", {
+        description: "Your research depth has exceeded current tier allocation.",
+        action: { label: "Request Clearance", onClick: () => navigate('/pricing') },
       });
       return;
     }
@@ -110,11 +109,11 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
           logout();
           navigate('/');
         } else {
-          toast.error("Generation Failed", { description: result.error || "A connection error occurred" });
+          toast.error("Logic Engine Error", { description: result.error || "Tunnel connection failed" });
         }
       }
     } catch (err) {
-      toast.error("Connection Interrupted");
+      toast.error("Core Interrupted");
     } finally {
       setIsLoading(false);
     }
@@ -125,7 +124,7 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
     if (res.success) {
       setMessages([]);
       onStreamUpdate("");
-      toast.success("Workspace cleared");
+      toast.success("Engagement logs purged");
     }
   };
   return (
@@ -133,12 +132,12 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
       <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30">
         <div className="flex items-center gap-2">
           <Terminal className="w-4 h-4 text-primary" />
-          <span className="font-bold text-sm text-foreground tracking-tight">
-            {currentSessionId ? "Aether Engine" : "Ready to Build"}
+          <span className="font-black text-sm text-foreground tracking-widest uppercase italic">
+            {currentSessionId ? "DarkCore Oracle" : "Standby for Target"}
           </span>
         </div>
         <div className="flex items-center gap-2">
-           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{userCredits} Credits</span>
+           <span className="text-[10px] font-black text-red-600 uppercase tracking-widest">{userCredits} POWER</span>
            {currentSessionId && (
              <AlertDialog>
                <AlertDialogTrigger asChild>
@@ -148,14 +147,14 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
                </AlertDialogTrigger>
                <AlertDialogContent>
                  <AlertDialogHeader>
-                   <AlertDialogTitle>Clear History?</AlertDialogTitle>
+                   <AlertDialogTitle>Purge Logs?</AlertDialogTitle>
                    <AlertDialogDescription>
-                     This will delete all messages in this session. Code snapshots are not affected.
+                     This will permanently disconnect this engagement. All research artifacts will be lost.
                    </AlertDialogDescription>
                  </AlertDialogHeader>
                  <AlertDialogFooter>
-                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                   <AlertDialogAction onClick={handleClear} className="bg-destructive hover:bg-destructive/90">Clear</AlertDialogAction>
+                   <AlertDialogCancel>Abort</AlertDialogCancel>
+                   <AlertDialogAction onClick={handleClear} className="bg-destructive hover:bg-destructive/90">Confirm Purge</AlertDialogAction>
                  </AlertDialogFooter>
                </AlertDialogContent>
              </AlertDialog>
@@ -166,26 +165,26 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
         <div className="space-y-6 max-w-2xl mx-auto">
           {messages.length === 0 && (
             <div className="py-20 flex flex-col items-center text-center space-y-8 animate-in fade-in zoom-in duration-500">
-              <div className="p-6 rounded-[2rem] bg-muted text-primary border border-border shadow-inner">
-                <Sparkles className="w-12 h-12" />
+              <div className="p-6 rounded-[2rem] bg-black text-red-500 border border-red-900 shadow-[0_0_20px_rgba(220,38,38,0.2)]">
+                <Lock className="w-12 h-12" />
               </div>
               <div className="space-y-3">
-                <h3 className="text-3xl font-black tracking-tighter text-foreground">Aether Workspace</h3>
-                <p className="text-muted-foreground text-sm max-w-xs mx-auto font-medium leading-relaxed">
-                  Start a new vision by describing a component, a full page, or a technical architecture.
+                <h3 className="text-3xl font-black tracking-tighter text-foreground uppercase italic">DARK GPT KERNEL</h3>
+                <p className="text-muted-foreground text-sm max-w-xs mx-auto font-bold leading-relaxed uppercase">
+                  Initialize research by defining target parameters, vulnerability vectors, or defensive audits.
                 </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
                 {[
-                  "Build a crypto landing page",
-                  "Create a dashboard sidebar",
-                  "Explain TON smart contracts",
-                  "Write a React hook for API"
+                  "Test for SQL injection",
+                  "Generate XSS payload scanner",
+                  "Audit OAuth flows",
+                  "Reverse engineer binary logic"
                 ].map(prompt => (
                   <button
                     key={prompt}
                     onClick={() => setInput(prompt)}
-                    className="p-4 rounded-2xl bg-card border border-border hover:border-primary/40 hover:bg-muted/50 transition-all text-left text-xs font-bold text-foreground/70"
+                    className="p-4 rounded-2xl bg-card border border-border hover:border-red-500/40 hover:bg-red-500/5 transition-all text-left text-xs font-black text-foreground/70 uppercase tracking-tight"
                   >
                     {prompt}
                   </button>
@@ -204,12 +203,12 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
               )}>
                 <div className={cn(
                   "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-1",
-                  m.role === 'user' ? "bg-primary-foreground text-primary" : "bg-muted text-primary"
+                  m.role === 'user' ? "bg-primary-foreground text-primary" : "bg-black text-red-500 border border-red-900"
                 )}>
-                  {m.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                  {m.role === 'user' ? <User className="w-4 h-4" /> : <ShieldAlert className="w-4 h-4" />}
                 </div>
                 <div className={cn(
-                  "flex-1 text-sm leading-relaxed prose prose-sm max-w-none break-words",
+                  "flex-1 text-sm leading-relaxed prose prose-sm max-w-none break-words font-mono",
                   isDark ? "prose-invert" : "prose-slate",
                   m.role === 'user' && "text-primary-foreground"
                 )}>
@@ -222,7 +221,7 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
           ))}
           {isLoading && (
             <div className="flex gap-4 p-4">
-              <div className="w-7 h-7 rounded-lg bg-muted text-primary flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-lg bg-black border border-red-900 text-red-500 flex items-center justify-center shrink-0">
                 <Loader2 className="w-4 h-4 animate-spin" />
               </div>
               <div className="flex-1 animate-pulse space-y-2 py-2">
@@ -235,10 +234,10 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
         </div>
       </ScrollArea>
       <div className="p-4 bg-background/95 backdrop-blur border-t border-border space-y-3">
-        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/50 border border-border">
-          <AlertCircle className="w-3.5 h-3.5 text-primary" />
-          <p className="text-[10px] text-muted-foreground font-bold leading-tight uppercase tracking-[0.1em]">
-            Elite Tier: Gemini 2.0 Flash is currently orchestrating.
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-600/5 border border-red-600/20">
+          <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+          <p className="text-[10px] text-red-600 font-black leading-tight uppercase tracking-[0.1em]">
+            KERNEL STATUS: DARKCORE 2.0 ORACLE IS CURRENTLY SYNTHESIZING.
           </p>
         </div>
         <form onSubmit={handleSubmit} className="relative">
@@ -252,8 +251,8 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
                 handleSubmit(e);
               }
             }}
-            placeholder="Describe your vision..."
-            className="w-full bg-background border border-border rounded-2xl px-5 py-4 pr-14 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground text-sm text-foreground shadow-sm resize-none min-h-[56px] max-h-32"
+            placeholder="Input research parameters..."
+            className="w-full bg-background border border-border rounded-2xl px-5 py-4 pr-14 focus:outline-none focus:ring-2 focus:ring-red-600/20 transition-all placeholder:text-muted-foreground text-sm text-foreground shadow-sm resize-none min-h-[56px] max-h-32 font-mono"
           />
           <Button
             type="submit"
