@@ -1,10 +1,10 @@
 import { DurableObject } from 'cloudflare:workers';
-import type { SessionInfo, ChatState, Message } from './types';
+import type { SessionInfo, ChatState, Message, PricingPackage } from './types';
 import type { Env } from './core-utils';
 export interface User {
   id: string;
   email: string;
-  tier: 'Free' | 'Pro' | 'Max';
+  tier: string;
   credits: number;
   isAdmin: boolean;
   blocked: boolean;
@@ -25,6 +25,7 @@ export interface AppSettings {
 export class AppController extends DurableObject<Env> {
   private users = new Map<string, User>();
   private sessions = new Map<string, SessionInfo>();
+  private packages = new Map<string, PricingPackage>();
   private settings: AppSettings = {
     maintenanceMode: false,
     networkMode: 'testnet',
@@ -40,14 +41,27 @@ export class AppController extends DurableObject<Env> {
   }
   private async ensureLoaded(): Promise<void> {
     if (!this.loaded) {
-      const [u, s, set] = await Promise.all([
+      const [u, s, set, p] = await Promise.all([
         this.ctx.storage.get<Record<string, User>>('users'),
         this.ctx.storage.get<Record<string, SessionInfo>>('sessions'),
-        this.ctx.storage.get<AppSettings>('settings')
+        this.ctx.storage.get<AppSettings>('settings'),
+        this.ctx.storage.get<Record<string, PricingPackage>>('packages')
       ]);
       this.users = new Map(Object.entries(u || {}));
       this.sessions = new Map(Object.entries(s || {}));
       if (set) this.settings = { ...this.settings, ...set };
+      if (p) {
+        this.packages = new Map(Object.entries(p));
+      } else {
+        // Seed default packages
+        const defaults: PricingPackage[] = [
+          { id: 'free', name: 'Free', price: '0', description: 'For hobbyists and explorers', credits: 10, features: ['10 messages per day', 'Standard speed', 'Community support', 'Public workspace'], isHighlight: false },
+          { id: 'pro', name: 'Pro', price: '29', description: "The developer's choice", credits: 1000, features: ['Unlimited messages', 'Fast generation', 'Private workspace', 'Advanced MCP Tools', 'Priority support'], isHighlight: true },
+          { id: 'max', name: 'Max', price: '99', description: 'For heavy duty production', credits: 10000, features: ['Everything in Pro', 'Custom MCP endpoints', '24/7 dedicated support', 'Team collaboration', 'Beta access'], isHighlight: false }
+        ];
+        defaults.forEach(pkg => this.packages.set(pkg.id, pkg));
+        await this.ctx.storage.put('packages', Object.fromEntries(this.packages));
+      }
       this.loaded = true;
     }
   }
@@ -55,7 +69,8 @@ export class AppController extends DurableObject<Env> {
     await Promise.all([
       this.ctx.storage.put('users', Object.fromEntries(this.users)),
       this.ctx.storage.put('sessions', Object.fromEntries(this.sessions)),
-      this.ctx.storage.put('settings', this.settings)
+      this.ctx.storage.put('settings', this.settings),
+      this.ctx.storage.put('packages', Object.fromEntries(this.packages))
     ]);
   }
   async getSettings(): Promise<AppSettings> {
@@ -66,6 +81,22 @@ export class AppController extends DurableObject<Env> {
     await this.ensureLoaded();
     this.settings = { ...this.settings, ...newSettings };
     await this.persist();
+  }
+  // Packages Management
+  async listPackages(): Promise<PricingPackage[]> {
+    await this.ensureLoaded();
+    return Array.from(this.packages.values());
+  }
+  async savePackage(pkg: PricingPackage): Promise<void> {
+    await this.ensureLoaded();
+    this.packages.set(pkg.id, pkg);
+    await this.persist();
+  }
+  async deletePackage(id: string): Promise<boolean> {
+    await this.ensureLoaded();
+    const deleted = this.packages.delete(id);
+    if (deleted) await this.persist();
+    return deleted;
   }
   async createOTP(email: string): Promise<string> {
     return "123456";
@@ -116,7 +147,7 @@ export class AppController extends DurableObject<Env> {
     await this.persist();
     return true;
   }
-  async upgradeUser(userId: string, tier: 'Free' | 'Pro' | 'Max', credits: number): Promise<void> {
+  async upgradeUser(userId: string, tier: string, credits: number): Promise<void> {
     await this.ensureLoaded();
     const user = this.users.get(userId);
     if (user) {

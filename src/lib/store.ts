@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-export type Tier = 'Free' | 'Pro' | 'Max';
+import type { PricingPackage } from '../../worker/types';
+export type Tier = 'Free' | 'Pro' | 'Max' | string;
 export interface User {
   id: string;
   email: string;
@@ -40,20 +41,23 @@ interface AppState {
   isAuthenticated: boolean;
   transactions: Transaction[];
   settings: SystemSettings;
-  // Session Management
+  packages: PricingPackage[];
   currentSessionId: string | null;
   sessions: SessionInfo[];
+  // Actions
   setSessions: (sessions: SessionInfo[]) => void;
   setCurrentSessionId: (id: string | null) => void;
-  // Actions
   setAuth: (user: User, token: string) => void;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  fetchPackages: () => Promise<void>;
   fetchPublicConfig: () => Promise<void>;
   consumeCredit: () => Promise<boolean>;
   addTransaction: (tx: Transaction) => void;
-  upgradeTier: (tier: Tier) => Promise<void>;
+  upgradeTier: (tier: string, credits: number) => Promise<void>;
   updateSettings: (settings: Partial<SystemSettings>) => void;
+  adminSavePackage: (pkg: PricingPackage) => Promise<boolean>;
+  adminDeletePackage: (id: string) => Promise<boolean>;
 }
 export const useStore = create<AppState>()(
   persist(
@@ -64,6 +68,7 @@ export const useStore = create<AppState>()(
       transactions: [],
       currentSessionId: null,
       sessions: [],
+      packages: [],
       settings: {
         freeTierLimit: 10,
         proTierLimit: 1000,
@@ -81,8 +86,20 @@ export const useStore = create<AppState>()(
         set({ user, token, isAuthenticated: true });
         if (token) get().refreshUser();
         get().fetchPublicConfig();
+        get().fetchPackages();
       },
       logout: () => set({ user: null, token: null, isAuthenticated: false, currentSessionId: null, sessions: [] }),
+      fetchPackages: async () => {
+        try {
+          const res = await fetch('/api/packages');
+          const json = await res.json();
+          if (json.success && json.data) {
+            set({ packages: json.data });
+          }
+        } catch (e) {
+          console.warn('Failed to fetch pricing packages', e);
+        }
+      },
       fetchPublicConfig: async () => {
         try {
           const res = await fetch('/api/config/payment');
@@ -143,10 +160,9 @@ export const useStore = create<AppState>()(
       addTransaction: (tx) => set((state) => ({
         transactions: [tx, ...state.transactions]
       })),
-      upgradeTier: async (tier) => {
+      upgradeTier: async (tier, credits) => {
         const token = get().token;
         if (!token) return;
-        const credits = tier === 'Pro' ? 1000 : 10000;
         try {
           const res = await fetch('/api/upgrade', {
             method: 'POST',
@@ -163,6 +179,41 @@ export const useStore = create<AppState>()(
       updateSettings: (newSettings) => set((state) => ({
         settings: { ...state.settings, ...newSettings }
       })),
+      adminSavePackage: async (pkg) => {
+        const token = get().token;
+        if (!token) return false;
+        try {
+          const res = await fetch('/api/admin/packages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': token },
+            body: JSON.stringify(pkg)
+          });
+          if (res.ok) {
+            await get().fetchPackages();
+            return true;
+          }
+          return false;
+        } catch (e) {
+          return false;
+        }
+      },
+      adminDeletePackage: async (id) => {
+        const token = get().token;
+        if (!token) return false;
+        try {
+          const res = await fetch(`/api/admin/packages/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': token }
+          });
+          if (res.ok) {
+            await get().fetchPackages();
+            return true;
+          }
+          return false;
+        } catch (e) {
+          return false;
+        }
+      }
     }),
     {
       name: 'aethercode-storage',

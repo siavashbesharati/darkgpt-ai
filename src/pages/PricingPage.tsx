@@ -1,40 +1,29 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
-import { Check, Zap, Rocket, Star, Shield, Network } from 'lucide-react';
+import { Check, Zap, Rocket, Star, Shield, Network, Loader2 } from 'lucide-react';
 import { CryptoPaymentModal } from '@/components/crypto/CryptoPaymentModal';
 import { motion } from 'framer-motion';
+import { useStore } from '@/lib/store';
 export function PricingPage() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const plans = [
-    {
-      name: "Free",
-      price: "0",
-      description: "For hobbyists and explorers",
-      features: ["10 messages per day", "Standard speed", "Community support", "Public workspace"],
-      icon: Zap,
-      cta: "Current Plan",
-      highlight: false
-    },
-    {
-      name: "Pro",
-      price: "29",
-      description: "The developer's choice",
-      features: ["Unlimited messages", "Fast generation", "Private workspace", "Advanced MCP Tools", "Priority support"],
-      icon: Rocket,
-      cta: "Upgrade to Pro",
-      highlight: true
-    },
-    {
-      name: "Max",
-      price: "99",
-      description: "For heavy duty production",
-      features: ["Everything in Pro", "Custom MCP endpoints", "24/7 dedicated support", "Team collaboration", "Beta access"],
-      icon: Star,
-      cta: "Go Max",
-      highlight: false
-    }
-  ];
+  const packages = useStore(s => s.packages);
+  const fetchPackages = useStore(s => s.fetchPackages);
+  const [loading, setLoading] = useState(packages.length === 0);
+  useEffect(() => {
+    const init = async () => {
+      setLoading(true);
+      await fetchPackages();
+      setLoading(false);
+    };
+    init();
+  }, [fetchPackages]);
+  const getIcon = (name: string) => {
+    const lower = name.toLowerCase();
+    if (lower.includes('pro')) return Rocket;
+    if (lower.includes('max')) return Star;
+    return Zap;
+  };
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/10">
       <Navbar />
@@ -48,54 +37,64 @@ export function PricingPage() {
             Upgrade your vision with transparent, high-speed payments powered by The Open Network.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-          {plans.map((plan, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className={`relative p-8 rounded-[2.5rem] border shadow-sm ${plan.highlight ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-card'} flex flex-col h-full hover:shadow-xl transition-all duration-500 group`}
-            >
-              {plan.highlight && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-lg">
-                  Most Popular
-                </div>
-              )}
-              <div className="flex items-center gap-3 mb-8">
-                <div className={`p-3 rounded-2xl ${plan.highlight ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
-                  <plan.icon className="w-6 h-6" />
-                </div>
-                <h3 className="text-2xl font-bold tracking-tight">{plan.name}</h3>
-              </div>
-              <div className="mb-10">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-5xl font-black tracking-tighter">${plan.price}</span>
-                  <span className="text-muted-foreground font-medium">/month</span>
-                </div>
-                <p className="text-muted-foreground mt-3 text-sm font-medium">{plan.description}</p>
-              </div>
-              <ul className="space-y-4 mb-12 flex-1">
-                {plan.features.map((feature, j) => (
-                  <li key={j} className="flex items-center gap-3 text-sm font-medium text-foreground/80">
-                    <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-primary" />
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Fetching tiers...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+            {packages.map((pkg, i) => {
+              const Icon = getIcon(pkg.name);
+              return (
+                <motion.div
+                  key={pkg.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className={`relative p-8 rounded-[2.5rem] border shadow-sm ${pkg.isHighlight ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-card'} flex flex-col h-full hover:shadow-xl transition-all duration-500 group`}
+                >
+                  {pkg.isHighlight && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-lg">
+                      Most Popular
                     </div>
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button
-                onClick={() => plan.price !== "0" && setSelectedPlan(plan.name)}
-                variant={plan.highlight ? "default" : "outline"}
-                disabled={plan.price === "0"}
-                className={`w-full h-14 rounded-2xl font-bold text-base shadow-sm transition-all duration-300 ${plan.highlight ? 'bg-primary text-primary-foreground hover:scale-[1.02]' : 'border-border hover:bg-muted hover:border-primary/50'}`}
-              >
-                {plan.cta}
-              </Button>
-            </motion.div>
-          ))}
-        </div>
+                  )}
+                  <div className="flex items-center gap-3 mb-8">
+                    <div className={`p-3 rounded-2xl ${pkg.isHighlight ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-2xl font-bold tracking-tight">{pkg.name}</h3>
+                  </div>
+                  <div className="mb-10">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-5xl font-black tracking-tighter">${pkg.price}</span>
+                      <span className="text-muted-foreground font-medium">/month</span>
+                    </div>
+                    <p className="text-muted-foreground mt-3 text-sm font-medium">{pkg.description}</p>
+                  </div>
+                  <ul className="space-y-4 mb-12 flex-1">
+                    {pkg.features.map((feature, j) => (
+                      <li key={j} className="flex items-center gap-3 text-sm font-medium text-foreground/80">
+                        <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <Check className="w-3 h-3 text-primary" />
+                        </div>
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    onClick={() => pkg.price !== "0" && setSelectedPlan(pkg.name)}
+                    variant={pkg.isHighlight ? "default" : "outline"}
+                    disabled={pkg.price === "0"}
+                    className={`w-full h-14 rounded-2xl font-bold text-base shadow-sm transition-all duration-300 ${pkg.isHighlight ? 'bg-primary text-primary-foreground hover:scale-[1.02]' : 'border-border hover:bg-muted hover:border-primary/50'}`}
+                  >
+                    {pkg.price === "0" ? "Current Plan" : `Upgrade to ${pkg.name}`}
+                  </Button>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
         <div className="mt-24 p-10 rounded-[3rem] border border-border bg-muted/30 backdrop-blur-sm flex flex-col md:flex-row items-center justify-between gap-10">
           <div className="flex items-center gap-8">
             <div className="p-6 rounded-3xl bg-card border border-border shadow-inner">

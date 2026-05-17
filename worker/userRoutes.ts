@@ -58,6 +58,12 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const success = await controller.consumeCredits(userId, 1);
         return c.json({ success });
     });
+    // Dynamic Packages
+    app.get('/api/packages', async (c) => {
+        const controller = getAppController(c.env);
+        const packages = await controller.listPackages();
+        return c.json({ success: true, data: packages });
+    });
     // Public Payment Config
     app.get('/api/config/payment', async (c) => {
         const controller = getAppController(c.env);
@@ -101,6 +107,24 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const controller = getAppController(c.env);
         await controller.updateSettings(settings);
         return c.json({ success: true });
+    });
+    // Admin Packages CRUD
+    app.get('/api/admin/packages', async (c) => {
+        const controller = getAppController(c.env);
+        const packages = await controller.listPackages();
+        return c.json({ success: true, data: packages });
+    });
+    app.post('/api/admin/packages', async (c) => {
+        const pkg = await c.req.json();
+        const controller = getAppController(c.env);
+        await controller.savePackage(pkg);
+        return c.json({ success: true });
+    });
+    app.delete('/api/admin/packages/:id', async (c) => {
+        const id = c.req.param('id');
+        const controller = getAppController(c.env);
+        const success = await controller.deletePackage(id);
+        return c.json({ success });
     });
     app.post('/api/upgrade', async (c) => {
         const userId = c.req.header('Authorization');

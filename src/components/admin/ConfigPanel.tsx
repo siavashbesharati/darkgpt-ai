@@ -24,33 +24,44 @@ export function ConfigPanel() {
   const token = useStore(s => s.token);
   useEffect(() => {
     const fetchConfig = async () => {
+      if (!token) return;
       try {
         const res = await fetch('/api/admin/settings', {
-          headers: { 'Authorization': token || '' }
+          headers: { 'Authorization': token }
         });
         const json = await res.json();
-        if (json.success) setConfig(json.data);
+        if (json.success) {
+          // Merge with defaults to prevent undefined values causing uncontrolled input warnings
+          setConfig(prev => ({
+            ...prev,
+            ...json.data
+          }));
+        } else {
+          console.warn('[ADMIN] Failed to load platform settings:', json.error);
+        }
       } catch (e) {
-        console.error("Failed to load platform settings");
+        console.error("[ADMIN] Platform settings load failed:", e);
       }
     };
     fetchConfig();
   }, [token]);
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!token) return;
     setLoading(true);
     try {
       const res = await fetch('/api/admin/settings', {
         method: 'POST',
-        headers: { 'Authorization': token || '', 'Content-Type': 'application/json' },
+        headers: { 'Authorization': token, 'Content-Type': 'application/json' },
         body: JSON.stringify(config)
       });
       if (res.ok) {
         toast.success("Platform settings updated successfully");
       } else {
-        throw new Error();
+        throw new Error("API responded with error");
       }
     } catch (e) {
+      console.error("[ADMIN] Platform settings sync failed:", e);
       toast.error("Configuration sync failed");
     } finally {
       setLoading(false);
@@ -76,7 +87,7 @@ export function ConfigPanel() {
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Base URL</Label>
                 <Input
-                  value={config.aiBaseUrl}
+                  value={config.aiBaseUrl || ""}
                   onChange={(e) => setConfig({ ...config, aiBaseUrl: e.target.value })}
                   className="bg-background border-border font-mono text-sm"
                   placeholder="https://..."
@@ -86,7 +97,7 @@ export function ConfigPanel() {
                 <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">API Key</Label>
                 <Input
                   type="password"
-                  value={config.aiApiKey}
+                  value={config.aiApiKey || ""}
                   onChange={(e) => setConfig({ ...config, aiApiKey: e.target.value })}
                   className="bg-background border-border font-mono text-sm"
                   placeholder="cf_api_..."
@@ -114,7 +125,7 @@ export function ConfigPanel() {
                 <p className="text-xs text-muted-foreground">Switching to Mainnet enables real-value transactions.</p>
               </div>
               <RadioGroup
-                value={config.networkMode}
+                value={config.networkMode || "testnet"}
                 onValueChange={(val) => setConfig({ ...config, networkMode: val as 'testnet' | 'mainnet' })}
                 className="flex items-center gap-4"
               >
@@ -137,7 +148,7 @@ export function ConfigPanel() {
                   <div className="space-y-2">
                     <Label className="text-[10px] text-muted-foreground font-bold">MAINNET TON</Label>
                     <Input
-                      value={config.tonMainnetAddress}
+                      value={config.tonMainnetAddress || ""}
                       onChange={(e) => setConfig({ ...config, tonMainnetAddress: e.target.value })}
                       className="bg-background border-border font-mono text-xs"
                       placeholder="EQ..."
@@ -146,7 +157,7 @@ export function ConfigPanel() {
                   <div className="space-y-2">
                     <Label className="text-[10px] text-muted-foreground font-bold">TESTNET TON</Label>
                     <Input
-                      value={config.tonTestnetAddress}
+                      value={config.tonTestnetAddress || ""}
                       onChange={(e) => setConfig({ ...config, tonTestnetAddress: e.target.value })}
                       className="bg-background border-border font-mono text-xs"
                       placeholder="EQ..."
@@ -162,7 +173,7 @@ export function ConfigPanel() {
                   <div className="space-y-2">
                     <Label className="text-[10px] text-muted-foreground font-bold text-cyan-500">MAINNET USDT</Label>
                     <Input
-                      value={config.tonMainnetUsdtAddress}
+                      value={config.tonMainnetUsdtAddress || ""}
                       onChange={(e) => setConfig({ ...config, tonMainnetUsdtAddress: e.target.value })}
                       className="bg-background border-border font-mono text-xs"
                       placeholder="EQ..."
@@ -171,7 +182,7 @@ export function ConfigPanel() {
                   <div className="space-y-2">
                     <Label className="text-[10px] text-muted-foreground font-bold text-cyan-500">TESTNET USDT</Label>
                     <Input
-                      value={config.tonTestnetUsdtAddress}
+                      value={config.tonTestnetUsdtAddress || ""}
                       onChange={(e) => setConfig({ ...config, tonTestnetUsdtAddress: e.target.value })}
                       className="bg-background border-border font-mono text-xs"
                       placeholder="EQ..."
@@ -188,7 +199,7 @@ export function ConfigPanel() {
                 <div className="space-y-2">
                   <Label className="text-[10px] text-muted-foreground font-bold uppercase">TonAPI Explorer URL</Label>
                   <Input
-                    value={config.tonApiUrl}
+                    value={config.tonApiUrl || ""}
                     onChange={(e) => setConfig({ ...config, tonApiUrl: e.target.value })}
                     className="bg-background border-border font-mono text-xs"
                     placeholder="https://..."
@@ -202,7 +213,7 @@ export function ConfigPanel() {
                     <p className="text-[9px] text-muted-foreground">Redirect all non-admin users.</p>
                   </div>
                   <Switch
-                    checked={config.maintenanceMode}
+                    checked={config.maintenanceMode || false}
                     onCheckedChange={(checked) => setConfig({ ...config, maintenanceMode: checked })}
                   />
                 </div>
