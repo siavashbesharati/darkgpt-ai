@@ -9,11 +9,12 @@ import { useStore } from '@/lib/store';
 import { v4 as uuidv4 } from 'uuid';
 interface CryptoPaymentModalProps {
   planName: string;
+  credits: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 type Step = 'select' | 'pay' | 'confirming' | 'success';
-export function CryptoPaymentModal({ planName, open, onOpenChange }: CryptoPaymentModalProps) {
+export function CryptoPaymentModal({ planName, credits, open, onOpenChange }: CryptoPaymentModalProps) {
   const [step, setStep] = useState<Step>('select');
   const [selectedAsset, setSelectedAsset] = useState<'TON' | 'USDT' | null>(null);
   const [invoiceMemo, setInvoiceMemo] = useState('');
@@ -54,15 +55,14 @@ export function CryptoPaymentModal({ planName, open, onOpenChange }: CryptoPayme
           memo: invoiceMemo,
           timestamp: Date.now()
         });
-        if (planName === 'Pro' || planName === 'Max') {
-          upgradeTier(planName);
-        }
+        // Pass both tier and credits to satisfy Store Law and resolve TS2554
+        upgradeTier(planName, credits);
         setStep('success');
-        toast.success("TON Transaction Confirmed! Project vision unlocked.");
+        toast.success(`TON Transaction Confirmed! ${credits} credits unlocked.`);
       }, 4000);
       return () => clearTimeout(timer);
     }
-  }, [step, planName, selectedAsset, addTransaction, upgradeTier, invoiceMemo]);
+  }, [step, planName, credits, selectedAsset, addTransaction, upgradeTier, invoiceMemo]);
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast.info(`${label} copied`);
@@ -157,7 +157,7 @@ export function CryptoPaymentModal({ planName, open, onOpenChange }: CryptoPayme
                       <div className="flex-1 p-3.5 bg-black border border-white/10 rounded-xl text-[11px] font-mono text-cyan-400 break-all leading-tight">
                         {getTargetAddress()}
                       </div>
-                      <Button variant="outline" size="icon" className="shrink-0 h-12 w-12 rounded-xl border-white/10 hover:bg-white/10" onClick={() => handleCopy(getTargetAddress(), "Address")}>
+                      <Button variant="outline" size="icon" className="shrink-0 h-12 w-12 rounded-xl border-white/10 hover:bg-white/10" onClick={() => handleCopy(getTargetAddress() || '', "Address")}>
                         <Copy className="w-4 h-4" />
                       </Button>
                     </div>

@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { useStore } from '@/lib/store';
 export function PricingPage() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [selectedCredits, setSelectedCredits] = useState<number>(0);
   const packages = useStore(s => s.packages);
   const fetchPackages = useStore(s => s.fetchPackages);
   const [loading, setLoading] = useState(packages.length === 0);
@@ -23,6 +24,10 @@ export function PricingPage() {
     if (lower.includes('pro')) return Rocket;
     if (lower.includes('max')) return Star;
     return Zap;
+  };
+  const handleUpgradeClick = (name: string, credits: number) => {
+    setSelectedPlan(name);
+    setSelectedCredits(credits);
   };
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/10">
@@ -83,7 +88,7 @@ export function PricingPage() {
                     ))}
                   </ul>
                   <Button
-                    onClick={() => pkg.price !== "0" && setSelectedPlan(pkg.name)}
+                    onClick={() => pkg.price !== "0" && handleUpgradeClick(pkg.name, pkg.credits)}
                     variant={pkg.isHighlight ? "default" : "outline"}
                     disabled={pkg.price === "0"}
                     className={`w-full h-14 rounded-2xl font-bold text-base shadow-sm transition-all duration-300 ${pkg.isHighlight ? 'bg-primary text-primary-foreground hover:scale-[1.02]' : 'border-border hover:bg-muted hover:border-primary/50'}`}
@@ -123,6 +128,7 @@ export function PricingPage() {
       {selectedPlan && (
         <CryptoPaymentModal
           planName={selectedPlan}
+          credits={selectedCredits}
           open={!!selectedPlan}
           onOpenChange={(open) => !open && setSelectedPlan(null)}
         />
