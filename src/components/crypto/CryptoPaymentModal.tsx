@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { CheckCircle2, Copy, Loader2, Wallet, ArrowLeft, ShieldAlert, BadgeInfo, ExternalLink, Ticket } from 'lucide-react';
 import { toast } from 'sonner';
-import { useStore, Tier } from '@/lib/store';
+import { useStore } from '@/lib/store';
 import { v4 as uuidv4 } from 'uuid';
 interface CryptoPaymentModalProps {
   planName: string;
@@ -53,7 +54,9 @@ export function CryptoPaymentModal({ planName, open, onOpenChange }: CryptoPayme
           memo: invoiceMemo,
           timestamp: Date.now()
         });
-        upgradeTier(planName as Tier);
+        if (planName === 'Pro' || planName === 'Max') {
+          upgradeTier(planName);
+        }
         setStep('success');
         toast.success("TON Transaction Confirmed! Project vision unlocked.");
       }, 4000);
@@ -70,7 +73,6 @@ export function CryptoPaymentModal({ planName, open, onOpenChange }: CryptoPayme
   const getQRValue = () => {
     const addr = getTargetAddress();
     const amount = planName === 'Pro' ? 29 : 99;
-    // TON URI Standard with amount (nanoTONs) and comment
     return `ton://transfer/${addr}?amount=${amount * 1000000000}&text=${invoiceMemo}`;
   };
   const openExplorer = () => {
@@ -150,7 +152,7 @@ export function CryptoPaymentModal({ planName, open, onOpenChange }: CryptoPayme
                     <p className="text-[9px] text-slate-500 text-center uppercase font-bold">Include this in the "Comment" field</p>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] text-slate-500 font-black ml-1 uppercase tracking-widest">Target Wallet</label>
+                    <Label className="text-[10px] text-slate-500 font-black ml-1 uppercase tracking-widest">Target Wallet</Label>
                     <div className="flex gap-2">
                       <div className="flex-1 p-3.5 bg-black border border-white/10 rounded-xl text-[11px] font-mono text-cyan-400 break-all leading-tight">
                         {getTargetAddress()}

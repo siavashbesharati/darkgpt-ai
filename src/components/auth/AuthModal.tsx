@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Mail, ShieldCheck, Sparkles } from 'lucide-react';
+import { Loader2, Mail, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { useStore } from '@/lib/store';
 export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
@@ -24,12 +24,14 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
       });
       if (res.ok) {
         setStep('otp');
-        toast.success("Demo OTP: 123456", {
-          description: "Check the developer console for the system log."
+        toast.success("Demo magic code: 123456", {
+          description: "For testing purposes, all accounts use this universal code."
         });
+      } else {
+        toast.error("Failed to send magic code");
       }
     } catch (e) {
-      toast.error("Failed to send OTP");
+      toast.error("Failed to send magic code");
     } finally {
       setLoading(false);
     }
@@ -58,7 +60,16 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
     }
   };
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(val) => {
+      onOpenChange(val);
+      if (!val) {
+        setTimeout(() => {
+          setStep('email');
+          setEmail('');
+          setCode('');
+        }, 300);
+      }
+    }}>
       <DialogContent className="sm:max-w-[400px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
         <DialogHeader>
           <div className="flex items-center justify-between mb-2">
@@ -86,6 +97,7 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  autoFocus
                 />
               </div>
               <Button type="submit" className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold" disabled={loading}>
@@ -104,6 +116,7 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   maxLength={6}
+                  autoFocus
                   className="tracking-[0.5em] text-center font-mono font-bold text-lg"
                 />
                 <p className="text-[11px] text-muted-foreground text-center pt-1 italic">
