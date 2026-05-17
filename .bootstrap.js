@@ -84,7 +84,8 @@ function runSetupCommands() {
     "bun add qrcode.react@^3.1.0",
     "bun add lucide-react",
     "bun add lucide-react@latest",
-    "bun add zustand"
+    "bun add zustand",
+    "bun add qrcode.react"
 ];
     
     if (commands.length === 0) {
