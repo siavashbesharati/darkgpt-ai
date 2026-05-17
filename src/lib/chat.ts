@@ -1,4 +1,5 @@
-import type { Message, ChatState, ToolCall, WeatherResult, MCPResult, ErrorResult, SessionInfo } from '../../worker/types';
+import type { Message, ChatState, SessionInfo } from '../../worker/types';
+import { useStore } from './store';
 export interface ChatResponse {
   success: boolean;
   data?: ChatState;
@@ -10,13 +11,11 @@ export const MODELS = [
   { id: 'google-ai-studio/gemini-1.5-flash', name: 'Gemini 1.5 Flash' },
 ];
 class ChatService {
-  private sessionId: string;
-  private baseUrl: string;
-  constructor() {
-    this.sessionId = crypto.randomUUID();
-    this.baseUrl = `/api/chat/${this.sessionId}`;
+  private getBaseUrl(sessionId: string) {
+    return `/api/chat/${sessionId}`;
   }
   async sendMessage(
+    sessionId: string,
     message: string,
     model?: string,
     onChunk?: (chunk: string) => void,
@@ -27,7 +26,7 @@ class ChatService {
       if (token) {
         headers['Authorization'] = token;
       }
-      const response = await fetch(`${this.baseUrl}/chat`, {
+      const response = await fetch(`${this.getBaseUrl(sessionId)}/chat`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ message, model, stream: !!onChunk }),
@@ -61,11 +60,11 @@ class ChatService {
       return { success: false, error: 'Failed to send message' };
     }
   }
-  async getMessages(token?: string): Promise<ChatResponse> {
+  async getMessages(sessionId: string, token?: string): Promise<ChatResponse> {
     try {
       const headers: Record<string, string> = {};
       if (token) headers['Authorization'] = token;
-      const response = await fetch(`${this.baseUrl}/messages`, { headers });
+      const response = await fetch(`${this.getBaseUrl(sessionId)}/messages`, { headers });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
@@ -75,11 +74,11 @@ class ChatService {
       return { success: false, error: 'Failed to load messages' };
     }
   }
-  async clearMessages(token?: string): Promise<ChatResponse> {
+  async clearMessages(sessionId: string, token?: string): Promise<ChatResponse> {
     try {
       const headers: Record<string, string> = {};
       if (token) headers['Authorization'] = token;
-      const response = await fetch(`${this.baseUrl}/clear`, {
+      const response = await fetch(`${this.getBaseUrl(sessionId)}/clear`, {
         method: 'DELETE',
         headers
       });
@@ -92,27 +91,16 @@ class ChatService {
       return { success: false, error: 'Failed to clear messages' };
     }
   }
-  getSessionId(): string {
-    return this.sessionId;
-  }
-  newSession(): void {
-    this.sessionId = crypto.randomUUID();
-    this.baseUrl = `/api/chat/${this.sessionId}`;
-  }
-  switchSession(sessionId: string): void {
-    this.sessionId = sessionId;
-    this.baseUrl = `/api/chat/${sessionId}`;
-  }
-  async createSession(title?: string, sessionId?: string): Promise<{ success: boolean; data?: { sessionId: string; title: string }; error?: string }> {
+  async updateSessionTitle(sessionId: string, title: string): Promise<{ success: boolean }> {
     try {
-      const response = await fetch('/api/sessions', {
-        method: 'POST',
+      const response = await fetch(`/api/sessions/${sessionId}/title`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, sessionId: sessionId || this.sessionId })
+        body: JSON.stringify({ title })
       });
       return await response.json();
     } catch (error) {
-      return { success: false, error: 'Failed to create session' };
+      return { success: false };
     }
   }
   async listSessions(): Promise<{ success: boolean; data?: SessionInfo[]; error?: string }> {
@@ -133,24 +121,6 @@ class ChatService {
       return await response.json();
     } catch (error) {
       return { success: false, error: 'Failed to delete session' };
-    }
-  }
-  async updateModel(model: string, token?: string): Promise<ChatResponse> {
-    try {
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = token;
-      const response = await fetch(`${this.baseUrl}/model`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ model })
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      return await response.json();
-    } catch (error) {
-      console.error('Failed to update model:', error);
-      return { success: false, error: 'Failed to update model' };
     }
   }
 }

@@ -15,7 +15,6 @@ export interface AppSettings {
   aiApiKey?: string;
   emailApiKey?: string;
   maintenanceMode: boolean;
-  // Blockchain Orchestration
   networkMode: 'testnet' | 'mainnet';
   tonMainnetAddress: string;
   tonTestnetAddress: string;
@@ -35,7 +34,6 @@ export class AppController extends DurableObject<Env> {
     tonTestnetUsdtAddress: 'EQBvW8ZVMYMv-7s6R8e74q8D-Y_R8Z-R8Z-R8Z-R8Z-R8Z-R8',
     tonApiUrl: 'https://testnet.tonapi.io'
   };
-  private otps = new Map<string, { code: string; expires: number }>();
   private loaded = false;
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -49,9 +47,7 @@ export class AppController extends DurableObject<Env> {
       ]);
       this.users = new Map(Object.entries(u || {}));
       this.sessions = new Map(Object.entries(s || {}));
-      if (set) {
-        this.settings = { ...this.settings, ...set };
-      }
+      if (set) this.settings = { ...this.settings, ...set };
       this.loaded = true;
     }
   }
@@ -72,9 +68,7 @@ export class AppController extends DurableObject<Env> {
     await this.persist();
   }
   async createOTP(email: string): Promise<string> {
-    const code = "123456";
-    this.otps.set(email, { code, expires: Date.now() + 600000 });
-    return code;
+    return "123456";
   }
   async verifyOTP(email: string, code: string): Promise<User | null> {
     await this.ensureLoaded();
@@ -141,11 +135,22 @@ export class AppController extends DurableObject<Env> {
     const now = Date.now();
     this.sessions.set(sessionId, {
       id: sessionId,
-      title: title || `Chat ${new Date(now).toLocaleDateString()}`,
+      title: title || `Workspace ${new Date(now).toLocaleDateString()}`,
       createdAt: now,
       lastActive: now
     });
     await this.persist();
+  }
+  async updateSessionTitle(sessionId: string, title: string): Promise<boolean> {
+    await this.ensureLoaded();
+    const session = this.sessions.get(sessionId);
+    if (session) {
+      session.title = title;
+      this.sessions.set(sessionId, session);
+      await this.persist();
+      return true;
+    }
+    return false;
   }
   async updateSessionActivity(sessionId: string): Promise<void> {
     await this.ensureLoaded();

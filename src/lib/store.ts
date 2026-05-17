@@ -17,11 +17,16 @@ export interface Transaction {
   memo: string;
   timestamp: number;
 }
+export interface SessionInfo {
+  id: string;
+  title: string;
+  createdAt: number;
+  lastActive: number;
+}
 export interface SystemSettings {
   freeTierLimit: number;
   proTierLimit: number;
   maxTierLimit: number;
-  // Blockchain State
   networkMode: 'testnet' | 'mainnet';
   activeTonAddress: string;
   activeTonUsdtAddress: string;
@@ -35,6 +40,12 @@ interface AppState {
   isAuthenticated: boolean;
   transactions: Transaction[];
   settings: SystemSettings;
+  // Session Management
+  currentSessionId: string | null;
+  sessions: SessionInfo[];
+  setSessions: (sessions: SessionInfo[]) => void;
+  setCurrentSessionId: (id: string | null) => void;
+  // Actions
   setAuth: (user: User, token: string) => void;
   logout: () => void;
   refreshUser: () => Promise<void>;
@@ -51,6 +62,8 @@ export const useStore = create<AppState>()(
       token: null,
       isAuthenticated: false,
       transactions: [],
+      currentSessionId: null,
+      sessions: [],
       settings: {
         freeTierLimit: 10,
         proTierLimit: 1000,
@@ -62,12 +75,14 @@ export const useStore = create<AppState>()(
         tonTestnetUsdtAddress: '',
         tonApiUrl: '',
       },
+      setSessions: (sessions) => set({ sessions }),
+      setCurrentSessionId: (id) => set({ currentSessionId: id }),
       setAuth: (user, token) => {
         set({ user, token, isAuthenticated: true });
         if (token) get().refreshUser();
         get().fetchPublicConfig();
       },
-      logout: () => set({ user: null, token: null, isAuthenticated: false }),
+      logout: () => set({ user: null, token: null, isAuthenticated: false, currentSessionId: null, sessions: [] }),
       fetchPublicConfig: async () => {
         try {
           const res = await fetch('/api/config/payment');
@@ -149,14 +164,14 @@ export const useStore = create<AppState>()(
         settings: { ...state.settings, ...newSettings }
       })),
     }),
-    { 
+    {
       name: 'aethercode-storage',
-      // Ensure we don't persist transient public config
       partialize: (state) => ({
         user: state.user,
         token: state.token,
         isAuthenticated: state.isAuthenticated,
         transactions: state.transactions,
+        currentSessionId: state.currentSessionId,
         settings: {
           freeTierLimit: state.settings.freeTierLimit,
           proTierLimit: state.settings.proTierLimit,
