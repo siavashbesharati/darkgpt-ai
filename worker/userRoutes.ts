@@ -107,7 +107,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         if (!userId) return c.json({ success: false, error: 'Unauthorized' }, 401);
         const { tier, credits } = await c.req.json();
         const controller = getAppController(c.env);
-        // Log environment for audit
         const settings = await controller.getSettings();
         console.log(`[PAYMENT] Upgrade to ${tier} for user ${userId} on ${settings.networkMode}`);
         await controller.upgradeUser(userId, tier, credits);
@@ -123,6 +122,13 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const controller = getAppController(c.env);
         await controller.addSession(sessionId, title);
         return c.json({ success: true });
+    });
+    app.put('/api/sessions/:sessionId/title', async (c) => {
+        const sessionId = c.req.param('sessionId');
+        const { title } = await c.req.json();
+        const controller = getAppController(c.env);
+        const success = await controller.updateSessionTitle(sessionId, title);
+        return c.json({ success });
     });
     app.delete('/api/sessions/:sessionId', async (c) => {
         const sessionId = c.req.param('sessionId');
