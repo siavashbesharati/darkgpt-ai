@@ -1,6 +1,6 @@
 # Cloudflare AI Chat Agent
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/siavashbesharati/darkgpt-ai)
 
 A production-ready full-stack AI chat application powered by Cloudflare Workers, Agents, and React. Features multi-session conversations, streaming responses, tool calling with MCP integration, and persistent session management using Durable Objects.
 
@@ -131,7 +131,7 @@ bun preview
 bunx wrangler deploy
 ```
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/siavashbesharati/darkgpt-ai)
 
 **Custom Domain**: `bunx wrangler pages publish dist --project-name=your-pages-project`
 
