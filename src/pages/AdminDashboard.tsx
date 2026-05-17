@@ -1,7 +1,6 @@
 import React from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DashboardOverview } from '@/components/admin/DashboardOverview';
-import { ControlPanel } from '@/components/admin/ControlPanel';
 import { UsersManagement } from '@/components/admin/UsersManagement';
 import { ConfigPanel } from '@/components/admin/ConfigPanel';
 import { PackagesManagement } from '@/components/admin/PackagesManagement';
@@ -70,8 +69,8 @@ export function AdminDashboard() {
         </TabsList>
         <TabsContent value="overview" className="space-y-10 animate-in fade-in duration-500">
           <DashboardOverview />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <Card className="lg:col-span-2 bg-card border-border shadow-soft rounded-[2rem] overflow-hidden">
+          <div className="grid grid-cols-1 gap-8">
+            <Card className="bg-card border-border shadow-soft rounded-[2rem] overflow-hidden">
               <CardHeader className="bg-muted/30 border-b border-border py-6 px-8">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
@@ -108,7 +107,6 @@ export function AdminDashboard() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-            <ControlPanel />
           </div>
           <Card className="bg-card border-border shadow-soft rounded-[2rem] overflow-hidden">
             <CardHeader className="bg-muted/30 border-b border-border py-6 px-8">
