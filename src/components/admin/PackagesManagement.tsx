@@ -8,11 +8,11 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, Edit2, Save, X, Layers, Zap, Info } from 'lucide-react';
 import { toast } from 'sonner';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogDescription,
   DialogFooter
 } from '@/components/ui/dialog';
@@ -90,7 +90,11 @@ export function PackagesManagement() {
           <h2 className="text-2xl font-bold tracking-tight">Platform Tiers</h2>
           <p className="text-sm text-muted-foreground font-medium">Manage pricing, feature lists, and dynamic user credit limits.</p>
         </div>
-        <Button onClick={() => handleOpenDialog()} className="bg-primary text-primary-foreground font-bold gap-2 rounded-xl">
+        <Button 
+          type="button" 
+          onClick={() => handleOpenDialog()} 
+          className="bg-primary text-primary-foreground font-bold gap-2 rounded-xl"
+        >
           <Plus className="w-4 h-4" /> Add Package
         </Button>
       </div>
@@ -103,10 +107,10 @@ export function PackagesManagement() {
                   {pkg.isHighlight ? "Highlighted" : "Standard"}
                 </Badge>
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenDialog(pkg)}>
+                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenDialog(pkg)}>
                     <Edit2 className="w-3.5 h-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(pkg.id)}>
+                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(pkg.id)}>
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
@@ -175,13 +179,13 @@ export function PackagesManagement() {
               <Label>Features List</Label>
               <div className="flex gap-2">
                 <Input value={newFeature} onChange={(e) => setNewFeature(e.target.value)} placeholder="Add feature..." onKeyDown={(e) => e.key === 'Enter' && addFeature()} />
-                <Button onClick={addFeature} variant="secondary"><Plus className="w-4 h-4" /></Button>
+                <Button type="button" onClick={addFeature} variant="secondary"><Plus className="w-4 h-4" /></Button>
               </div>
               <div className="max-h-[150px] overflow-y-auto space-y-1 mt-2">
                 {formData.features?.map((f, i) => (
                   <div key={i} className="flex items-center justify-between p-2 rounded bg-muted border border-border">
                     <span className="text-[11px] font-medium">{f}</span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => removeFeature(i)}>
+                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => removeFeature(i)}>
                       <X className="w-3 h-3" />
                     </Button>
                   </div>
@@ -190,8 +194,8 @@ export function PackagesManagement() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave} className="font-bold gap-2">
+            <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+            <Button type="button" onClick={handleSave} className="font-bold gap-2">
               <Save className="w-4 h-4" /> Save Package
             </Button>
           </DialogFooter>

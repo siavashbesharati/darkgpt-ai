@@ -150,7 +150,7 @@ export function UsersManagement() {
                   <TableCell className="text-right pr-6">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
                           <MoreHorizontal className="w-4 h-4" />
                         </Button>
                       </DropdownMenuTrigger>
