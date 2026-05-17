@@ -83,7 +83,8 @@ function runSetupCommands() {
     "bun add remark-gfm@^4.0.0",
     "bun add qrcode.react@^3.1.0",
     "bun add lucide-react",
-    "bun add lucide-react@latest"
+    "bun add lucide-react@latest",
+    "bun add zustand"
 ];
     
     if (commands.length === 0) {
