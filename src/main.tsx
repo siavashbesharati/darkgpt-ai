@@ -25,13 +25,14 @@ export function App() {
   const refreshUser = useStore(s => s.refreshUser);
   const isAuthenticated = useStore(s => s.isAuthenticated);
   useEffect(() => {
-    document.title = "DARK GPT - Advanced Security Workspace";
     if (isAuthenticated) {
       refreshUser();
     }
   }, [refreshUser, isAuthenticated]);
   return <RouterProvider router={router} />;
 }
+
+document.title = "DARK GPT - Advanced Security Workspace";
 declare global {
   interface Window {
     __reactRoot?: Root;
