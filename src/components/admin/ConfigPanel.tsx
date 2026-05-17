@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Save, Globe, Key, AlertTriangle, RefreshCcw, Wallet, Network, Coins } from 'lucide-react';
+import { Save, Globe, Key, AlertTriangle, RefreshCcw, Wallet, Network, Coins, MessageSquare, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { useStore } from '@/lib/store';
 export function ConfigPanel() {
@@ -18,7 +18,8 @@ export function ConfigPanel() {
     tonTestnetAddress: '',
     tonMainnetUsdtAddress: '',
     tonTestnetUsdtAddress: '',
-    tonApiUrl: ''
+    tonApiUrl: '',
+    telegramId: ''
   });
   const [loading, setLoading] = useState(false);
   const token = useStore(s => s.token);
@@ -31,13 +32,10 @@ export function ConfigPanel() {
         });
         const json = await res.json();
         if (json.success) {
-          // Merge with defaults to prevent undefined values causing uncontrolled input warnings
           setConfig(prev => ({
             ...prev,
             ...json.data
           }));
-        } else {
-          console.warn('[ADMIN] Failed to load platform settings:', json.error);
         }
       } catch (e) {
         console.error("[ADMIN] Platform settings load failed:", e);
@@ -56,19 +54,18 @@ export function ConfigPanel() {
         body: JSON.stringify(config)
       });
       if (res.ok) {
-        toast.success("Platform settings updated successfully");
+        toast.success("Platform orchestrations updated");
       } else {
         throw new Error("API responded with error");
       }
     } catch (e) {
-      console.error("[ADMIN] Platform settings sync failed:", e);
       toast.error("Configuration sync failed");
     } finally {
       setLoading(false);
     }
   };
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500 pb-20">
       <form onSubmit={handleSave} className="space-y-8">
         <Card className="bg-card border-border shadow-lg">
           <CardHeader className="border-b border-border/50">
@@ -103,6 +100,38 @@ export function ConfigPanel() {
                   placeholder="cf_api_..."
                 />
               </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-card border-border shadow-lg">
+          <CardHeader className="border-b border-border/50 bg-muted/5">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-red-600/10 text-red-600">
+                <MessageSquare className="w-5 h-5" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Tactical Support Channel</CardTitle>
+                <CardDescription>Configure the primary comms link for field operators.</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-8 space-y-4">
+            <div className="space-y-2">
+              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <Send className="w-3.5 h-3.5" /> Telegram Command ID
+              </Label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-mono">@</div>
+                <Input
+                  value={config.telegramId || ""}
+                  onChange={(e) => setConfig({ ...config, telegramId: e.target.value.replace('@', '') })}
+                  className="bg-background border-border font-mono pl-8"
+                  placeholder="DarkGptAdmin"
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter italic">
+                The floating support button will direct users to t.me/{config.telegramId || 'handle'}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -188,34 +217,6 @@ export function ConfigPanel() {
                       placeholder="EQ..."
                     />
                   </div>
-                </div>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                <Globe className="w-3.5 h-3.5" /> Platform Health & API
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-2">
-                  <Label className="text-[10px] text-muted-foreground font-bold uppercase">TonAPI Explorer URL</Label>
-                  <Input
-                    value={config.tonApiUrl || ""}
-                    onChange={(e) => setConfig({ ...config, tonApiUrl: e.target.value })}
-                    className="bg-background border-border font-mono text-xs"
-                    placeholder="https://..."
-                  />
-                </div>
-                <div className="p-4 rounded-xl border border-destructive/20 bg-destructive/5 flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-xs font-bold text-destructive flex items-center gap-1.5 uppercase">
-                      <AlertTriangle className="w-3 h-3" /> Maintenance
-                    </Label>
-                    <p className="text-[9px] text-muted-foreground">Redirect all non-admin users.</p>
-                  </div>
-                  <Switch
-                    checked={config.maintenanceMode || false}
-                    onCheckedChange={(checked) => setConfig({ ...config, maintenanceMode: checked })}
-                  />
                 </div>
               </div>
             </div>

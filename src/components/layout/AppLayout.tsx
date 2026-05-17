@@ -1,7 +1,9 @@
 import React from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-import { cn } from "@/lib/utils";
+import { SupportButton } from "@/components/SupportButton";
+import { cn } from "@/utils";
+import { useStore } from '@/lib/store';
 type AppLayoutProps = {
   children: React.ReactNode;
   container?: boolean;
@@ -24,6 +26,7 @@ export function AppLayout({ children, container = false, className, contentClass
           children
         )}
       </SidebarInset>
+      <SupportButton />
     </SidebarProvider>
   );
 }

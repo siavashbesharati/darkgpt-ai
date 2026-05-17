@@ -20,6 +20,14 @@ export interface PricingPackage {
   features: string[];
   isHighlight: boolean;
 }
+export interface SecurityPrompt {
+  id: string;
+  title: string;
+  description: string;
+  promptText: string;
+  category: 'EXPLOIT' | 'AUDIT' | 'RECON' | 'DEFENSE';
+  icon?: string;
+}
 export interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;

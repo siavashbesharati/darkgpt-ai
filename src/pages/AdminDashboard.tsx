@@ -5,6 +5,7 @@ import { ControlPanel } from '@/components/admin/ControlPanel';
 import { UsersManagement } from '@/components/admin/UsersManagement';
 import { ConfigPanel } from '@/components/admin/ConfigPanel';
 import { PackagesManagement } from '@/components/admin/PackagesManagement';
+import { PromptsManagement } from '@/components/admin/PromptsManagement';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { useStore } from '@/lib/store';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { format } from 'date-fns';
-import { ShieldCheck, Info, Users, LayoutDashboard, Settings2, BarChart3, TrendingUp, Package } from 'lucide-react';
+import { ShieldCheck, Info, Users, LayoutDashboard, Settings2, BarChart3, TrendingUp, Package, Library } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useTheme } from '@/hooks/use-theme';
 const chartData = [
@@ -49,7 +50,7 @@ export function AdminDashboard() {
         </Alert>
       </header>
       <Tabs defaultValue="overview" className="space-y-10">
-        <TabsList className="bg-muted p-1 border border-border inline-flex h-12 items-center justify-center rounded-2xl shadow-sm">
+        <TabsList className="bg-muted p-1 border border-border inline-flex h-12 items-center justify-center rounded-2xl shadow-sm overflow-x-auto">
           <TabsTrigger value="overview" className="rounded-xl px-8 py-2.5 flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-lg text-sm font-bold">
             <BarChart3 className="w-4 h-4" /> Overview
           </TabsTrigger>
@@ -58,6 +59,9 @@ export function AdminDashboard() {
           </TabsTrigger>
           <TabsTrigger value="packages" className="rounded-xl px-8 py-2.5 flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-lg text-sm font-bold">
             <Package className="w-4 h-4" /> Packages
+          </TabsTrigger>
+          <TabsTrigger value="prompts" className="rounded-xl px-8 py-2.5 flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-lg text-sm font-bold">
+            <Library className="w-4 h-4" /> Prompts
           </TabsTrigger>
           <TabsTrigger value="config" className="rounded-xl px-8 py-2.5 flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-lg text-sm font-bold">
             <Settings2 className="w-4 h-4" /> API Configuration
@@ -159,6 +163,9 @@ export function AdminDashboard() {
         </TabsContent>
         <TabsContent value="packages" className="animate-in slide-in-from-bottom-6 duration-500">
           <PackagesManagement />
+        </TabsContent>
+        <TabsContent value="prompts" className="animate-in slide-in-from-bottom-6 duration-500">
+          <PromptsManagement />
         </TabsContent>
         <TabsContent value="config" className="animate-in slide-in-from-bottom-6 duration-500">
           <ConfigPanel />

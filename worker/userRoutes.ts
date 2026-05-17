@@ -64,6 +64,12 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const packages = await controller.listPackages();
         return c.json({ success: true, data: packages });
     });
+    // Dynamic Prompts
+    app.get('/api/prompts', async (c) => {
+        const controller = getAppController(c.env);
+        const prompts = await controller.listPrompts();
+        return c.json({ success: true, data: prompts });
+    });
     // Public Payment Config
     app.get('/api/config/payment', async (c) => {
         const controller = getAppController(c.env);
@@ -75,6 +81,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
                 activeTonAddress: settings.networkMode === 'mainnet' ? settings.tonMainnetAddress : settings.tonTestnetAddress,
                 activeTonUsdtAddress: settings.networkMode === 'mainnet' ? settings.tonMainnetUsdtAddress : settings.tonTestnetUsdtAddress,
                 tonApiUrl: settings.tonApiUrl,
+                telegramId: settings.telegramId
             }
         });
     });
@@ -126,13 +133,29 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const success = await controller.deletePackage(id);
         return c.json({ success });
     });
+    // Admin Prompts CRUD
+    app.get('/api/admin/prompts', async (c) => {
+        const controller = getAppController(c.env);
+        const prompts = await controller.listPrompts();
+        return c.json({ success: true, data: prompts });
+    });
+    app.post('/api/admin/prompts', async (c) => {
+        const prompt = await c.req.json();
+        const controller = getAppController(c.env);
+        await controller.savePrompt(prompt);
+        return c.json({ success: true });
+    });
+    app.delete('/api/admin/prompts/:id', async (c) => {
+        const id = c.req.param('id');
+        const controller = getAppController(c.env);
+        const success = await controller.deletePrompt(id);
+        return c.json({ success });
+    });
     app.post('/api/upgrade', async (c) => {
         const userId = c.req.header('Authorization');
         if (!userId) return c.json({ success: false, error: 'Unauthorized' }, 401);
         const { tier, credits } = await c.req.json();
         const controller = getAppController(c.env);
-        const settings = await controller.getSettings();
-        console.log(`[PAYMENT] Upgrade to ${tier} for user ${userId} on ${settings.networkMode}`);
         await controller.upgradeUser(userId, tier, credits);
         return c.json({ success: true });
     });

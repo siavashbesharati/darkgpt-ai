@@ -1,5 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
-import type { SessionInfo, ChatState, Message, PricingPackage } from './types';
+import type { SessionInfo, ChatState, Message, PricingPackage, SecurityPrompt } from './types';
 import type { Env } from './core-utils';
 export interface User {
   id: string;
@@ -21,11 +21,13 @@ export interface AppSettings {
   tonMainnetUsdtAddress: string;
   tonTestnetUsdtAddress: string;
   tonApiUrl: string;
+  telegramId: string;
 }
 export class AppController extends DurableObject<Env> {
   private users = new Map<string, User>();
   private sessions = new Map<string, SessionInfo>();
   private packages = new Map<string, PricingPackage>();
+  private prompts = new Map<string, SecurityPrompt>();
   private settings: AppSettings = {
     maintenanceMode: false,
     networkMode: 'testnet',
@@ -33,7 +35,8 @@ export class AppController extends DurableObject<Env> {
     tonTestnetAddress: 'EQBvW8ZVMYMv-7s6R8e74q8D-Y_R8Z-R8Z-R8Z-R8Z-R8Z-R8',
     tonMainnetUsdtAddress: '',
     tonTestnetUsdtAddress: 'EQBvW8ZVMYMv-7s6R8e74q8D-Y_R8Z-R8Z-R8Z-R8Z-R8Z-R8',
-    tonApiUrl: 'https://testnet.tonapi.io'
+    tonApiUrl: 'https://testnet.tonapi.io',
+    telegramId: ''
   };
   private loaded = false;
   constructor(ctx: DurableObjectState, env: Env) {
@@ -41,11 +44,12 @@ export class AppController extends DurableObject<Env> {
   }
   private async ensureLoaded(): Promise<void> {
     if (!this.loaded) {
-      const [u, s, set, p] = await Promise.all([
+      const [u, s, set, p, pr] = await Promise.all([
         this.ctx.storage.get<Record<string, User>>('users'),
         this.ctx.storage.get<Record<string, SessionInfo>>('sessions'),
         this.ctx.storage.get<AppSettings>('settings'),
-        this.ctx.storage.get<Record<string, PricingPackage>>('packages')
+        this.ctx.storage.get<Record<string, PricingPackage>>('packages'),
+        this.ctx.storage.get<Record<string, SecurityPrompt>>('prompts')
       ]);
       this.users = new Map(Object.entries(u || {}));
       this.sessions = new Map(Object.entries(s || {}));
@@ -53,7 +57,6 @@ export class AppController extends DurableObject<Env> {
       if (p) {
         this.packages = new Map(Object.entries(p));
       } else {
-        // Seed default packages
         const defaults: PricingPackage[] = [
           { id: 'free', name: 'Free', price: '0', description: 'For hobbyists and explorers', credits: 10, features: ['10 messages per day', 'Standard speed', 'Community support', 'Public workspace'], isHighlight: false },
           { id: 'pro', name: 'Pro', price: '29', description: "The developer's choice", credits: 1000, features: ['Unlimited messages', 'Fast generation', 'Private workspace', 'Advanced MCP Tools', 'Priority support'], isHighlight: true },
@@ -61,6 +64,18 @@ export class AppController extends DurableObject<Env> {
         ];
         defaults.forEach(pkg => this.packages.set(pkg.id, pkg));
         await this.ctx.storage.put('packages', Object.fromEntries(this.packages));
+      }
+      if (pr) {
+        this.prompts = new Map(Object.entries(pr));
+      } else {
+        const defaultPrompts: SecurityPrompt[] = [
+          { id: 'sql-scan', title: 'SQL Injection Audit', description: 'Identify blind and error-based SQL vulnerabilities.', promptText: 'Conduct a thorough security audit of the following application endpoint for SQL injection vulnerabilities. Analyze parameters: [INSERT PARAMETERS].', category: 'AUDIT' },
+          { id: 'payload-synth', title: 'Payload Synthesis', description: 'Generate Proof-of-Concept exploit payloads.', promptText: 'Generate a non-destructive Proof-of-Concept payload for testing [VULNERABILITY] on a [PLATFORM] target. Ensure the payload is strictly for authorized testing.', category: 'EXPLOIT' },
+          { id: 'oauth-flow', title: 'OAuth Flow Audit', description: 'Check for redirect URI leakage and state flaws.', promptText: 'Audit the OAuth 2.0 implementation flow. Specifically check for redirect_uri validation bypasses and proper CSRF state token usage.', category: 'AUDIT' },
+          { id: 'recon-sub', title: 'Subdomain Recon', description: 'Passive discovery of attack surfaces.', promptText: 'Outline a comprehensive strategy for passive subdomain discovery for the target [DOMAIN]. Include specific tools and API endpoints to query.', category: 'RECON' }
+        ];
+        defaultPrompts.forEach(p => this.prompts.set(p.id, p));
+        await this.ctx.storage.put('prompts', Object.fromEntries(this.prompts));
       }
       this.loaded = true;
     }
@@ -70,7 +85,8 @@ export class AppController extends DurableObject<Env> {
       this.ctx.storage.put('users', Object.fromEntries(this.users)),
       this.ctx.storage.put('sessions', Object.fromEntries(this.sessions)),
       this.ctx.storage.put('settings', this.settings),
-      this.ctx.storage.put('packages', Object.fromEntries(this.packages))
+      this.ctx.storage.put('packages', Object.fromEntries(this.packages)),
+      this.ctx.storage.put('prompts', Object.fromEntries(this.prompts))
     ]);
   }
   async getSettings(): Promise<AppSettings> {
@@ -82,7 +98,6 @@ export class AppController extends DurableObject<Env> {
     this.settings = { ...this.settings, ...newSettings };
     await this.persist();
   }
-  // Packages Management
   async listPackages(): Promise<PricingPackage[]> {
     await this.ensureLoaded();
     return Array.from(this.packages.values());
@@ -95,6 +110,21 @@ export class AppController extends DurableObject<Env> {
   async deletePackage(id: string): Promise<boolean> {
     await this.ensureLoaded();
     const deleted = this.packages.delete(id);
+    if (deleted) await this.persist();
+    return deleted;
+  }
+  async listPrompts(): Promise<SecurityPrompt[]> {
+    await this.ensureLoaded();
+    return Array.from(this.prompts.values());
+  }
+  async savePrompt(prompt: SecurityPrompt): Promise<void> {
+    await this.ensureLoaded();
+    this.prompts.set(prompt.id, prompt);
+    await this.persist();
+  }
+  async deletePrompt(id: string): Promise<boolean> {
+    await this.ensureLoaded();
+    const deleted = this.prompts.delete(id);
     if (deleted) await this.persist();
     return deleted;
   }

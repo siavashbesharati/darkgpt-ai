@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Bot, User, Loader2, ShieldAlert, Trash2, AlertCircle, Terminal, Lock } from 'lucide-react';
+import { Send, Bot, User, Loader2, ShieldAlert, Trash2, AlertCircle, Terminal, Lock, Rocket } from 'lucide-react';
 import { chatService } from '@/lib/chat';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -22,6 +22,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
 interface ChatInterfaceProps {
   onStreamUpdate: (text: string) => void;
 }
@@ -29,14 +37,28 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { isDark } = useTheme();
   const currentSessionId = useStore(s => s.currentSessionId);
   const userCredits = useStore(s => s.user?.credits ?? 0);
   const token = useStore(s => s.token);
   const refreshUser = useStore(s => s.refreshUser);
   const logout = useStore(s => s.logout);
+  const pendingPrompt = useStore(s => s.pendingPrompt);
+  const setPendingPrompt = useStore(s => s.setPendingPrompt);
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Auto-fill from Intelligence Library
+  useEffect(() => {
+    if (pendingPrompt) {
+      setInput(pendingPrompt);
+      setPendingPrompt(null);
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    }
+  }, [pendingPrompt, setPendingPrompt]);
   useEffect(() => {
     const loadHistory = async () => {
       if (!currentSessionId || !token) {
@@ -72,10 +94,7 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
       return;
     }
     if (userCredits <= 0) {
-      toast.error("Power Limit Exceeded", {
-        description: "Your research depth has exceeded current tier allocation.",
-        action: { label: "Request Clearance", onClick: () => navigate('/pricing') },
-      });
+      setShowUpgradeModal(true);
       return;
     }
     const targetSessionId = currentSessionId || crypto.randomUUID();
@@ -108,6 +127,8 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
         if (result.error === 'USER_BLOCKED') {
           logout();
           navigate('/');
+        } else if (result.error === 'OUT_OF_CREDITS') {
+          setShowUpgradeModal(true);
         } else {
           toast.error("Logic Engine Error", { description: result.error || "Tunnel connection failed" });
         }
@@ -242,6 +263,7 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
         </div>
         <form onSubmit={handleSubmit} className="relative">
           <textarea
+            ref={textareaRef}
             rows={1}
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -264,6 +286,51 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
           </Button>
         </form>
       </div>
+      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+        <DialogContent className="sm:max-w-[440px] bg-slate-950 border-white/10 text-white overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-red-600" />
+          <DialogHeader className="pt-4">
+            <div className="flex justify-center mb-6">
+              <div className="p-6 rounded-full bg-red-600/10 border border-red-600/20">
+                <ShieldAlert className="w-12 h-12 text-red-600" />
+              </div>
+            </div>
+            <DialogTitle className="text-3xl font-black text-center uppercase tracking-tighter italic">Power Limit Exceeded</DialogTitle>
+            <DialogDescription className="text-center text-slate-400 font-bold uppercase text-xs px-4">
+              Your research depth has exceeded the current tier allocation. Advanced kernel synthesis requires higher clearance.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-6 space-y-4">
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center text-white">
+                  <Terminal className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-black text-sm uppercase tracking-widest">Active Credits</p>
+                  <p className="text-xs text-slate-500 uppercase font-bold">0 units remaining</p>
+                </div>
+              </div>
+              <Badge variant="outline" className="border-red-600/50 text-red-600 uppercase font-black text-[10px]">LOCKED</Badge>
+            </div>
+          </div>
+          <DialogFooter className="flex flex-col gap-2 sm:flex-col">
+            <Button 
+              onClick={() => navigate('/pricing')}
+              className="w-full h-14 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl shadow-xl uppercase tracking-widest gap-2"
+            >
+              Request Clearance <Rocket className="w-5 h-5" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={() => setShowUpgradeModal(false)}
+              className="w-full h-12 text-slate-500 hover:text-white uppercase font-black text-[10px]"
+            >
+              Return to Console
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

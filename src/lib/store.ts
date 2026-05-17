@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { PricingPackage } from '../../worker/types';
+import type { PricingPackage, SecurityPrompt } from '../../worker/types';
 export type Tier = 'Free' | 'Pro' | 'Max' | string;
 export interface User {
   id: string;
@@ -34,6 +34,7 @@ export interface SystemSettings {
   tonMainnetUsdtAddress: string;
   tonTestnetUsdtAddress: string;
   tonApiUrl: string;
+  telegramId: string;
 }
 interface AppState {
   user: User | null;
@@ -42,15 +43,19 @@ interface AppState {
   transactions: Transaction[];
   settings: SystemSettings;
   packages: PricingPackage[];
+  prompts: SecurityPrompt[];
   currentSessionId: string | null;
   sessions: SessionInfo[];
+  pendingPrompt: string | null;
   // Actions
   setSessions: (sessions: SessionInfo[]) => void;
   setCurrentSessionId: (id: string | null) => void;
   setAuth: (user: User, token: string) => void;
+  setPendingPrompt: (prompt: string | null) => void;
   logout: () => void;
   refreshUser: () => Promise<void>;
   fetchPackages: () => Promise<void>;
+  fetchPrompts: () => Promise<void>;
   fetchPublicConfig: () => Promise<void>;
   consumeCredit: () => Promise<boolean>;
   addTransaction: (tx: Transaction) => void;
@@ -58,6 +63,8 @@ interface AppState {
   updateSettings: (settings: Partial<SystemSettings>) => void;
   adminSavePackage: (pkg: PricingPackage) => Promise<boolean>;
   adminDeletePackage: (id: string) => Promise<boolean>;
+  adminSavePrompt: (prompt: SecurityPrompt) => Promise<boolean>;
+  adminDeletePrompt: (id: string) => Promise<boolean>;
 }
 export const useStore = create<AppState>()(
   persist(
@@ -69,6 +76,8 @@ export const useStore = create<AppState>()(
       currentSessionId: null,
       sessions: [],
       packages: [],
+      prompts: [],
+      pendingPrompt: null,
       settings: {
         freeTierLimit: 10,
         proTierLimit: 1000,
@@ -79,6 +88,7 @@ export const useStore = create<AppState>()(
         tonMainnetUsdtAddress: '',
         tonTestnetUsdtAddress: '',
         tonApiUrl: '',
+        telegramId: '',
       },
       setSessions: (sessions) => set({ sessions }),
       setCurrentSessionId: (id) => set({ currentSessionId: id }),
@@ -87,17 +97,26 @@ export const useStore = create<AppState>()(
         if (token) get().refreshUser();
         get().fetchPublicConfig();
         get().fetchPackages();
+        get().fetchPrompts();
       },
+      setPendingPrompt: (prompt) => set({ pendingPrompt: prompt }),
       logout: () => set({ user: null, token: null, isAuthenticated: false, currentSessionId: null, sessions: [] }),
       fetchPackages: async () => {
         try {
           const res = await fetch('/api/packages');
           const json = await res.json();
-          if (json.success && json.data) {
-            set({ packages: json.data });
-          }
+          if (json.success && json.data) set({ packages: json.data });
         } catch (e) {
           console.warn('Failed to fetch pricing packages', e);
+        }
+      },
+      fetchPrompts: async () => {
+        try {
+          const res = await fetch('/api/prompts');
+          const json = await res.json();
+          if (json.success && json.data) set({ prompts: json.data });
+        } catch (e) {
+          console.warn('Failed to fetch security prompts', e);
         }
       },
       fetchPublicConfig: async () => {
@@ -114,6 +133,7 @@ export const useStore = create<AppState>()(
                 tonMainnetUsdtAddress: json.data.tonMainnetUsdtAddress,
                 tonTestnetUsdtAddress: json.data.tonTestnetUsdtAddress,
                 tonApiUrl: json.data.tonApiUrl,
+                telegramId: json.data.telegramId,
               }
             }));
           }
@@ -125,9 +145,7 @@ export const useStore = create<AppState>()(
         const token = get().token;
         if (!token) return;
         try {
-          const res = await fetch('/api/auth/me', {
-            headers: { 'Authorization': token }
-          });
+          const res = await fetch('/api/auth/me', { headers: { 'Authorization': token } });
           const json = await res.json();
           if (json.success && json.data) {
             set({ user: json.data });
@@ -169,9 +187,7 @@ export const useStore = create<AppState>()(
             headers: { 'Content-Type': 'application/json', 'Authorization': token },
             body: JSON.stringify({ tier, credits })
           });
-          if (res.ok) {
-            await get().refreshUser();
-          }
+          if (res.ok) await get().refreshUser();
         } catch (e) {
           console.error('Upgrade failed', e);
         }
@@ -213,6 +229,41 @@ export const useStore = create<AppState>()(
         } catch (e) {
           return false;
         }
+      },
+      adminSavePrompt: async (prompt) => {
+        const token = get().token;
+        if (!token) return false;
+        try {
+          const res = await fetch('/api/admin/prompts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': token },
+            body: JSON.stringify(prompt)
+          });
+          if (res.ok) {
+            await get().fetchPrompts();
+            return true;
+          }
+          return false;
+        } catch (e) {
+          return false;
+        }
+      },
+      adminDeletePrompt: async (id) => {
+        const token = get().token;
+        if (!token) return false;
+        try {
+          const res = await fetch(`/api/admin/prompts/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': token }
+          });
+          if (res.ok) {
+            await get().fetchPrompts();
+            return true;
+          }
+          return false;
+        } catch (e) {
+          return false;
+        }
       }
     }),
     {
@@ -226,7 +277,8 @@ export const useStore = create<AppState>()(
         settings: {
           freeTierLimit: state.settings.freeTierLimit,
           proTierLimit: state.settings.proTierLimit,
-          maxTierLimit: state.settings.maxTierLimit
+          maxTierLimit: state.settings.maxTierLimit,
+          telegramId: state.settings.telegramId
         }
       })
     }

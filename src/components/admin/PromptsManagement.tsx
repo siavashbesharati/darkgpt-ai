@@ -74,8 +74,8 @@ export function PromptsManagement() {
       else toast.error("Purge failed");
     }
   };
-  const filteredPrompts = prompts.filter(p =>
-    p.title.toLowerCase().includes(search.toLowerCase()) ||
+  const filteredPrompts = prompts.filter(p => 
+    p.title.toLowerCase().includes(search.toLowerCase()) || 
     p.category.toLowerCase().includes(search.toLowerCase())
   );
   return (
@@ -98,7 +98,7 @@ export function PromptsManagement() {
                 className="pl-9 bg-background border-border"
               />
             </div>
-            <Button type="button" onClick={() => handleOpenDialog()} className="bg-primary text-primary-foreground font-bold gap-2">
+            <Button onClick={() => handleOpenDialog()} className="bg-primary text-primary-foreground font-bold gap-2">
               <Plus className="w-4 h-4" /> Add Prompt
             </Button>
           </div>
@@ -124,10 +124,10 @@ export function PromptsManagement() {
                 <TableCell className="text-xs text-muted-foreground max-w-md truncate">{p.description}</TableCell>
                 <TableCell className="text-right pr-6">
                   <div className="flex justify-end gap-1">
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenDialog(p)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenDialog(p)}>
                       <Edit2 className="w-3.5 h-3.5" />
                     </Button>
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(p.id)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(p.id)}>
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </div>
@@ -158,8 +158,8 @@ export function PromptsManagement() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="category">Tactical Category</Label>
-                <Select
-                  value={formData.category}
+                <Select 
+                  value={formData.category} 
                   onValueChange={(val) => setFormData({ ...formData, category: val as any })}
                 >
                   <SelectTrigger>
@@ -180,20 +180,20 @@ export function PromptsManagement() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="text">Tactical Prompt Text</Label>
-              <Textarea
-                id="text"
+              <Textarea 
+                id="text" 
                 rows={6}
                 className="font-mono text-sm"
-                value={formData.promptText}
-                onChange={(e) => setFormData({ ...formData, promptText: e.target.value })}
-                placeholder="Analyze the following parameters for vulnerability vectors..."
+                value={formData.promptText} 
+                onChange={(e) => setFormData({ ...formData, promptText: e.target.value })} 
+                placeholder="Analyze the following parameters for vulnerability vectors..." 
               />
               <p className="text-[10px] text-muted-foreground uppercase font-bold italic">This text will auto-fill the operator's console input.</p>
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-            <Button type="button" onClick={handleSave} className="font-bold gap-2">
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSave} className="font-bold gap-2">
               <Save className="w-4 h-4" /> Commit to Library
             </Button>
           </DialogFooter>
