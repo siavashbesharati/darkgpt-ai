@@ -26,10 +26,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useShallow } from 'zustand/react/shallow';
 export function AppSidebar(): JSX.Element {
   const currentSessionId = useStore(s => s.currentSessionId);
   const setCurrentSessionId = useStore(s => s.setCurrentSessionId);
-  const sessions = useStore(s => s.sessions);
+  const sessions = useStore(useShallow(s => s.sessions));
   const setSessions = useStore(s => s.setSessions);
   const userCredits = useStore(s => s.user?.credits ?? 0);
   const userTier = useStore(s => s.user?.tier ?? 'Free');

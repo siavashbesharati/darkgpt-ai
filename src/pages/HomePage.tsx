@@ -82,7 +82,7 @@ export function HomePage() {
                   <p><span className="text-zinc-500"># Initializing Payload Generator</span></p>
                   <p><span className="text-red-400">await</span> DarkCore.<span className="text-white">scan</span>(target_url);</p>
                   <p className="pl-4 text-zinc-500">// Vulnerability found: SQL Injection (Blind)</p>
-                  <p className="pl-4 text-red-500 font-bold">>>> Generating POC exploit...</p>
+                  <p className="pl-4 text-red-500 font-bold">{">>>"} Generating POC exploit...</p>
                   <p className="text-emerald-500">[SUCCESS] Exploit logic verified.</p>
                 </div>
               </div>

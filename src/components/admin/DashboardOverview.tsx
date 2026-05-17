@@ -7,15 +7,15 @@ import { useShallow } from 'zustand/react/shallow';
 export function DashboardOverview() {
   const transactions = useStore(useShallow(s => s.transactions));
   const credits = useStore(s => s.user?.credits ?? 0);
-  const tier = useStore(s => s.user?.tier ?? 'Guest');
+  const userTier = useStore(s => s.user?.tier ?? 'Guest');
   const totalRevenue = React.useMemo(() => {
-    return transactions.reduce((acc, tx) => acc + (tx.planName === 'Pro' ? 29 : 99), 0);
+    return (transactions ?? []).reduce((acc, tx) => acc + (tx.planName === 'Pro' ? 29 : 99), 0);
   }, [transactions]);
   const stats = [
     { label: 'Total Revenue', value: `$${totalRevenue}`, icon: DollarSign, trend: '+12%', color: 'text-emerald-400' },
     { label: 'Active Sessions', value: '42', icon: Activity, trend: '+5%', color: 'text-cyan-400' },
     { label: 'Token Burn Rate', value: '1.2k', icon: Cpu, trend: '-2%', color: 'text-violet-400' },
-    { label: 'Your Balance', value: `${credits} tokens`, icon: Users, trend: tier, color: 'text-amber-400' },
+    { label: 'Your Balance', value: `${credits} tokens`, icon: Users, trend: userTier, color: 'text-amber-400' },
   ];
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
