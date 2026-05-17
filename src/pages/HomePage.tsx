@@ -1,14 +1,22 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, ArrowRight, Shield, Zap, Terminal, Cpu, Layers, Lock } from 'lucide-react';
+import { Sparkles, ArrowRight, Shield, Zap, Terminal, Cpu, Layers, Lock, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Navbar } from '@/components/layout/Navbar';
 import { motion } from 'framer-motion';
 export function HomePage() {
   const securityTerms = ["Kali", "Metasploit", "OWASP", "BurpSuite", "Wireshark", "Nmap", "RedTeam", "BlueTeam"];
   useEffect(() => {
-    document.title = 'DARK GPT | Ethical Hacking Workspace';
+    document.title = 'DARK GPT | Tactical Intelligence Workspace';
   }, []);
+  const headlineVariants = {
+    hidden: { opacity: 0 },
+    visible: (i: number) => ({
+      opacity: 1,
+      transition: { delay: i * 0.05, duration: 0.1 }
+    })
+  };
+  const title = "ORCHESTRATE EXPLOITS. DEFEND THE CORE.";
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 overflow-x-hidden">
       <Navbar />
@@ -25,33 +33,37 @@ export function HomePage() {
             <Lock className="w-3.5 h-3.5 text-primary" />
             <span>Operational Security Intelligence</span>
           </motion.div>
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-6xl md:text-8xl font-display font-black tracking-tighter leading-[0.9] mb-8"
-          >
-            ORCHESTRATE EXPLOITS. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-zinc-800 to-black dark:from-red-500 dark:via-zinc-400 dark:to-white">
-              DEFEND THE CORE.
-            </span>
-          </motion.h1>
+          <h1 className="text-6xl md:text-8xl font-display font-black tracking-tighter leading-[0.9] mb-8">
+            {title.split("").map((char, i) => (
+              <motion.span
+                key={i}
+                custom={i}
+                initial="hidden"
+                animate="visible"
+                variants={headlineVariants}
+                className={i > 20 ? "text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-zinc-800 to-black dark:from-red-500 dark:via-zinc-400 dark:to-white" : ""}
+              >
+                {char}
+              </motion.span>
+            ))}
+          </h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
             className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-12 font-medium"
           >
-            DARK GPT is the ultimate AI arsenal for security researchers and ethical hackers. Build penetration testing tools and audit architecture at machine speed.
+            The elite AI arsenal for security researchers. Build payloads and audit architectures at machine speed with Zero-Day precision.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
+            transition={{ duration: 0.6, delay: 1 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-24"
           >
-            <Button asChild size="lg" className="h-14 px-10 text-lg font-black bg-primary text-primary-foreground hover:scale-105 transition-all rounded-2xl shadow-xl uppercase tracking-widest">
+            <Button asChild size="lg" className="h-14 px-10 text-lg font-black bg-primary text-primary-foreground hover:scale-105 active:scale-95 transition-all rounded-2xl shadow-xl uppercase tracking-widest relative group overflow-hidden">
               <Link to="/editor" className="flex items-center gap-2">
+                <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity animate-pulse" />
                 Initialize Ops <Terminal className="w-5 h-5" />
               </Link>
             </Button>
@@ -62,10 +74,11 @@ export function HomePage() {
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.4 }}
+            transition={{ duration: 1, delay: 1.2 }}
             className="relative mx-auto max-w-5xl"
           >
             <div className="rounded-2xl border border-border bg-black shadow-2xl overflow-hidden aspect-video relative group border-t-4 border-t-red-600">
+              <div className="tactical-scanline opacity-30" />
               <div className="h-10 bg-zinc-900 border-b border-zinc-800 flex items-center px-4 gap-2">
                 <div className="flex gap-1.5">
                   <div className="w-3 h-3 rounded-full bg-zinc-700" />
@@ -73,7 +86,7 @@ export function HomePage() {
                   <div className="w-3 h-3 rounded-full bg-zinc-700" />
                 </div>
                 <div className="ml-4 px-3 py-1 rounded bg-black text-[10px] text-red-500 font-mono font-bold uppercase tracking-widest">
-                  dark-gpt-kernel-v4
+                  dark-gpt-kernel-v4.0.8
                 </div>
               </div>
               <div className="p-8 text-left font-mono text-sm text-zinc-300 space-y-3 bg-gradient-to-b from-black to-zinc-950">
@@ -81,9 +94,9 @@ export function HomePage() {
                 <div className="pl-4 space-y-1">
                   <p><span className="text-zinc-500"># Initializing Payload Generator</span></p>
                   <p><span className="text-red-400">await</span> DarkCore.<span className="text-white">scan</span>(target_url);</p>
-                  <p className="pl-4 text-zinc-500">// Vulnerability found: SQL Injection (Blind)</p>
+                  <p className="pl-4 text-zinc-500">// Vulnerability found: Logic Flow Bypass</p>
                   <p className="pl-4 text-red-500 font-bold">{">>>"} Generating POC exploit...</p>
-                  <p className="text-emerald-500">[SUCCESS] Exploit logic verified.</p>
+                  <p className="text-emerald-500">[SUCCESS] Terminal payload synthesized.</p>
                 </div>
               </div>
             </div>
@@ -103,21 +116,21 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {[
-              { icon: Terminal, title: "Vulnerability Analysis", desc: "Deep-trace logic scanning to find hidden entry points in modern architectures." },
-              { icon: Shield, title: "Payload Generation", desc: "Instant synthesis of Proof-of-Concept exploits for authorized security testing." },
-              { icon: Cpu, title: "Network Auditing", desc: "Intelligent packet and flow analysis powered by specialized DarkCore LLMs." },
-              { icon: Lock, title: "On-Chain Security", desc: "Audit smart contracts for reentrancy, overflow, and logic flaws in real-time." }
+              { icon: Terminal, title: "Deep Logic Scan", desc: "Advanced trace analysis to find hidden entry points in modern architectures." },
+              { icon: Shield, title: "Payload Synth", desc: "Instant synthesis of Proof-of-Concept exploits for authorized security testing." },
+              { icon: Cpu, title: "Flow Analysis", desc: "Intelligent packet and flow analysis powered by specialized DarkCore LLMs." },
+              { icon: Lock, title: "On-Chain Audit", desc: "Audit smart contracts for reentrancy, overflow, and logic flaws in real-time." }
             ].map((f, i) => (
               <motion.div
                 key={i}
-                whileHover={{ y: -5 }}
-                className="p-8 rounded-3xl border border-border bg-card hover:border-red-500/50 transition-all group"
+                whileHover={{ y: -5, borderColor: 'rgba(220, 38, 38, 0.5)' }}
+                className="p-8 rounded-3xl border border-border bg-card transition-all group"
               >
                 <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mb-6 group-hover:bg-red-600 group-hover:text-white transition-all">
                   <f.icon className="w-6 h-6 text-primary group-hover:text-inherit" />
                 </div>
-                <h3 className="text-lg font-bold mb-2">{f.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>
+                <h3 className="text-lg font-bold mb-2 uppercase italic tracking-tight">{f.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed font-medium">{f.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -126,14 +139,29 @@ export function HomePage() {
       <footer className="py-24 border-t border-border bg-card">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <div className="space-y-8">
-            <p className="text-muted-foreground text-sm font-medium">© 2024 DARK GPT Security Research Group.</p>
-            <div className="max-w-2xl mx-auto p-6 rounded-[2rem] bg-red-600/5 border border-red-600/20 inline-block shadow-sm">
-              <p className="text-[10px] text-red-600 dark:text-red-400 font-black uppercase tracking-[0.2em] mb-3">Mandatory Ethical Disclosure</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                DARK GPT is a specialized cybersecurity research platform. All generated payloads, scanning logic, and 
-                vulnerability research must be conducted strictly within authorized, sandboxed environments. 
-                Users are solely responsible for compliance with international and local cyber laws.
-              </p>
+            <div className="flex justify-center gap-8 mb-4">
+              <Link to="/pricing" className="text-xs font-black uppercase text-muted-foreground hover:text-primary transition-colors">Tiers</Link>
+              <Link to="/editor" className="text-xs font-black uppercase text-muted-foreground hover:text-primary transition-colors">Workspace</Link>
+              <span className="text-xs font-black uppercase text-muted-foreground opacity-50">Support</span>
+            </div>
+            <p className="text-muted-foreground text-[10px] font-black uppercase tracking-widest">© 2024 DARK GPT Research Group. Access Controlled.</p>
+            <div className="max-w-3xl mx-auto p-8 rounded-[2.5rem] bg-red-600/5 border border-red-600/20 text-left relative overflow-hidden shadow-sm">
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                <AlertTriangle className="w-24 h-24 text-red-600" />
+              </div>
+              <div className="relative z-10">
+                <p className="text-[11px] text-red-600 dark:text-red-400 font-black uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                  <Shield className="w-4 h-4" /> Mandatory Operational Disclosure
+                </p>
+                <div className="space-y-4 text-xs text-muted-foreground leading-relaxed font-medium">
+                  <p>
+                    DARK GPT is a specialized cybersecurity research platform. All generated payloads, scanning logic, and vulnerability research must be conducted strictly within authorized, sandboxed environments.
+                  </p>
+                  <p className="p-3 bg-red-600/10 rounded-xl border border-red-600/10 text-red-600 dark:text-red-400 font-bold italic">
+                    AI SERVICE NOTICE: There is a system-wide limit on the number of requests that can be made to the AI servers across all user apps in a given time period. Please manage your Power Credits accordingly.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

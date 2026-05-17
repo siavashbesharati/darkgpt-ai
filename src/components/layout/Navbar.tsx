@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, Zap, LayoutDashboard, LogOut, User as UserIcon, History, Terminal } from 'lucide-react';
+import { Shield, Zap, LayoutDashboard, LogOut, User as UserIcon, History, Terminal, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Badge } from '@/components/ui/badge';
@@ -30,50 +30,56 @@ export function Navbar({ showTrigger = false }: NavbarProps) {
               <SidebarTrigger className="h-9 w-9" />
             </div>
           )}
-          <Link to="/" className="flex items-center gap-2 group shrink-0">
-            <div className="p-1.5 rounded-lg bg-primary">
-              <Shield className="w-5 h-5 text-primary-foreground" />
+          <div className="flex items-center gap-4">
+            <Link to="/" className="flex items-center gap-2 group shrink-0">
+              <div className="p-1.5 rounded-lg bg-primary">
+                <Shield className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <span className="glitch-text font-display font-bold text-xl tracking-tight text-foreground uppercase italic">
+                DARK GPT
+              </span>
+            </Link>
+            <div className="hidden lg:flex items-center gap-2 px-2 py-0.5 rounded-full border border-emerald-500/20 bg-emerald-500/5">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Kernel: Stable</span>
             </div>
-            <span className="font-display font-bold text-xl tracking-tight text-foreground uppercase italic">
-              DARK GPT
-            </span>
-          </Link>
+          </div>
           <div className="hidden md:flex items-center gap-1 ml-4">
             <Link to="/editor" className={cn(
-              "px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2 transition-colors",
+              "px-3 py-1.5 text-xs font-bold rounded-md flex items-center gap-2 transition-all uppercase tracking-wider",
               location.pathname === '/editor' ? "text-primary bg-muted" : "text-muted-foreground hover:text-foreground"
             )}>
-              <Terminal className="w-4 h-4" /> Operations
+              <Terminal className="w-3.5 h-3.5" /> Operations
             </Link>
             <Link to="/pricing" className={cn(
-              "px-4 py-2 text-sm font-medium rounded-md transition-colors",
+              "px-3 py-1.5 text-xs font-bold rounded-md transition-all uppercase tracking-wider",
               location.pathname === '/pricing' ? "text-primary bg-muted" : "text-muted-foreground hover:text-foreground"
             )}>
               Power Tiers
             </Link>
             {userIsAdmin && (
               <Link to="/admin" className={cn(
-                "px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2 transition-colors",
+                "px-3 py-1.5 text-xs font-bold rounded-md flex items-center gap-2 transition-all uppercase tracking-wider",
                 location.pathname === '/admin' ? "text-primary bg-muted" : "text-muted-foreground hover:text-foreground"
               )}>
-                <LayoutDashboard className="w-4 h-4" /> Command
+                <LayoutDashboard className="w-3.5 h-3.5" /> Command
               </Link>
             )}
           </div>
         </div>
         <div className="flex items-center gap-4">
           {isAuthenticated ? (
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted border border-border">
-                <Zap className="w-3.5 h-3.5 text-primary" />
-                <span className="text-xs font-bold tracking-tight text-foreground">{userCredits}</span>
-                <Badge variant="secondary" className="bg-primary/10 text-primary border-none px-1.5 text-[10px] font-bold uppercase">
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full bg-muted border border-border">
+                <Zap className="w-3 h-3 text-primary" />
+                <span className="text-[11px] font-black tracking-tight text-foreground">{userCredits}</span>
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-none px-1.5 text-[9px] font-black uppercase">
                   {userTier}
                 </Badge>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full bg-muted border border-border h-10 w-10">
+                  <Button variant="ghost" size="icon" className="rounded-full bg-muted border border-border h-9 w-9">
                     <UserIcon className="w-4 h-4 text-foreground" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -97,12 +103,12 @@ export function Navbar({ showTrigger = false }: NavbarProps) {
               </DropdownMenu>
             </div>
           ) : (
-            <Button onClick={() => setAuthOpen(true)} className="bg-primary text-primary-foreground font-bold rounded-full px-8 shadow-sm">
+            <Button type="button" onClick={() => setAuthOpen(true)} className="bg-primary text-primary-foreground font-black rounded-full px-6 h-9 text-xs shadow-sm uppercase tracking-widest">
               INITIALIZE
             </Button>
           )}
           <div className="border-l border-border pl-4 h-6 flex items-center">
-            <ThemeToggle className="relative top-0 right-0" />
+            <ThemeToggle className="relative top-0 right-0 h-8 w-8" />
           </div>
         </div>
       </div>

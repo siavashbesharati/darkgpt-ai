@@ -17,20 +17,19 @@ export function EditorPage() {
   const [activeTab, setActiveTab] = useState<string>("console");
   useEffect(() => {
     const latest = extractLatestCodeBlock(streamingText);
-    if (latest) {
-      setExtractedCode(latest);
-    }
+    if (latest) setExtractedCode(latest);
   }, [streamingText]);
   const handleSave = () => {
-    toast.success("Snapshot saved", {
-      description: "Project version locked at " + new Date().toLocaleTimeString()
+    toast.success("Engagement snapshot saved", {
+      description: "Version locked: " + new Date().toLocaleTimeString()
     });
   };
   return (
-    <AppLayout className="bg-background overflow-hidden">
+    <AppLayout className="bg-background overflow-hidden terminal-flicker">
+      <div className="tactical-scanline opacity-10" />
       <div className="flex flex-col h-screen overflow-hidden">
         <Navbar showTrigger />
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1 overflow-hidden relative z-10">
           <ResizablePanelGroup direction="horizontal" className="h-full">
             <ResizablePanel defaultSize={40} minSize={30} className="flex flex-col">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
@@ -38,13 +37,13 @@ export function EditorPage() {
                   <TabsList className="bg-transparent border-none p-0 h-9 gap-1">
                     <TabsTrigger
                       value="console"
-                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-[10px] font-black uppercase tracking-widest px-4 h-7 rounded-lg"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-[10px] font-black uppercase tracking-widest px-4 h-7 rounded-lg transition-all"
                     >
                       <Terminal className="w-3 h-3 mr-2" /> Console
                     </TabsTrigger>
                     <TabsTrigger
                       value="library"
-                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-[10px] font-black uppercase tracking-widest px-4 h-7 rounded-lg"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-[10px] font-black uppercase tracking-widest px-4 h-7 rounded-lg transition-all"
                     >
                       <Library className="w-3 h-3 mr-2" /> Library
                     </TabsTrigger>
@@ -58,29 +57,29 @@ export function EditorPage() {
                 </TabsContent>
               </Tabs>
             </ResizablePanel>
-            <ResizableHandle withHandle className="w-1 bg-border hover:bg-primary/20 transition-colors" />
+            <ResizableHandle withHandle className="w-1.5 bg-border/50 hover:bg-red-600/30 transition-colors" />
             <ResizablePanel defaultSize={60} minSize={40} className="flex flex-col relative">
               <div className="absolute top-2.5 right-20 z-50 flex items-center gap-2">
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-8 text-muted-foreground hover:text-foreground bg-muted/50 border border-border hover:bg-muted gap-2 px-3 transition-colors"
+                  className="h-8 text-muted-foreground hover:text-foreground bg-muted/30 border border-border hover:bg-muted/50 gap-2 px-3 transition-all rounded-lg"
                   onClick={handleSave}
                 >
                   <Save className="w-3.5 h-3.5" />
-                  <span className="text-xs font-medium">Save</span>
+                  <span className="text-[10px] font-black uppercase">Snap</span>
                 </Button>
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-8 text-muted-foreground hover:text-foreground bg-muted/50 border border-border hover:bg-muted gap-2 px-3 transition-colors"
+                  className="h-8 text-muted-foreground hover:text-foreground bg-muted/30 border border-border hover:bg-muted/50 gap-2 px-3 transition-all rounded-lg"
                 >
                   <Share2 className="w-3.5 h-3.5" />
-                  <span className="text-xs font-medium">Deploy</span>
+                  <span className="text-[10px] font-black uppercase">Push</span>
                 </Button>
               </div>
               <CodeViewer
-                code={extractedCode?.code || "// Start a conversation to generate code..."}
+                code={extractedCode?.code || "// STANDBY FOR KERNEL OUTPUT...\n// START A CONVERSATION TO INJECT CODE."}
                 language={extractedCode?.language || "typescript"}
               />
             </ResizablePanel>
