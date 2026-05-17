@@ -3,10 +3,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useStore } from '@/lib/store';
 import { DollarSign, Users, Cpu, Activity, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useShallow } from 'zustand/react/shallow';
 export function DashboardOverview() {
-  const transactions = useStore((s) => s.transactions);
-  const credits = useStore((s) => s.user?.credits ?? 0);
-  const tier = useStore((s) => s.user?.tier ?? 'Guest');
+  const transactions = useStore(useShallow(s => s.transactions));
+  const credits = useStore(s => s.user?.credits ?? 0);
+  const tier = useStore(s => s.user?.tier ?? 'Guest');
   const totalRevenue = React.useMemo(() => {
     return transactions.reduce((acc, tx) => acc + (tx.planName === 'Pro' ? 29 : 99), 0);
   }, [transactions]);

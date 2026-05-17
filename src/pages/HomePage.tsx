@@ -120,20 +120,27 @@ export function HomePage() {
           </div>
         </div>
       </section>
-      <footer className="py-20 border-t border-border bg-card">
+      <footer className="py-24 border-t border-border bg-card">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-8 grayscale opacity-50">
-             <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" className="h-6" alt="BTC" />
-             <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" className="h-6" alt="ETH" />
-             <img src="https://cryptologos.cc/logos/solana-sol-logo.png" className="h-6" alt="SOL" />
+          <div className="flex items-center justify-center gap-6 mb-12 grayscale opacity-40 hover:opacity-100 transition-opacity duration-500">
+             <div className="flex flex-col items-center gap-2">
+               <img src="https://cryptologos.cc/logos/toncoin-ton-logo.png" className="h-8" alt="TON" />
+               <span className="text-[8px] font-black uppercase tracking-tighter">TON Network</span>
+             </div>
+             <div className="w-px h-8 bg-border" />
+             <div className="flex flex-col items-center gap-2">
+               <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" className="h-8" alt="USDT" />
+               <span className="text-[8px] font-black uppercase tracking-tighter">USDT Jetton</span>
+             </div>
           </div>
-          <div className="space-y-4">
-            <p className="text-muted-foreground text-sm">© 2024 AetherCode AI. All rights reserved.</p>
-            <div className="max-w-2xl mx-auto p-4 rounded-2xl bg-muted border border-border inline-block">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mb-1">Mandatory Disclosure</p>
-              <p className="text-xs text-muted-foreground">
-                Although this project has AI capabilities, there is a limit on the number of requests that can be made
-                to the AI servers across all user apps in a given time period. Shared resource limits apply.
+          <div className="space-y-8">
+            <p className="text-muted-foreground text-sm font-medium">© 2024 AetherCode AI. Securely Orchestrated on Cloudflare.</p>
+            <div className="max-w-2xl mx-auto p-6 rounded-[2rem] bg-muted/50 border border-border inline-block shadow-sm">
+              <p className="text-[10px] text-primary font-black uppercase tracking-[0.2em] mb-3">Mandatory Technical Disclosure</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                AetherCode AI utilizes high-performance shared compute resources. To ensure equitable access for all developers, 
+                system-wide limits apply to the number of AI requests processed per time period. Verification of 
+                premium access is managed via the TON blockchain protocol.
               </p>
             </div>
           </div>
