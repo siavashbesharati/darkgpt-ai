@@ -11,6 +11,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Message } from '../../../worker/types';
 import { useTheme } from '@/hooks/use-theme';
+import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,7 +50,6 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  // Auto-fill from Intelligence Library
   useEffect(() => {
     if (pendingPrompt) {
       setInput(pendingPrompt);
@@ -315,14 +315,14 @@ export function ChatInterface({ onStreamUpdate }: ChatInterfaceProps) {
             </div>
           </div>
           <DialogFooter className="flex flex-col gap-2 sm:flex-col">
-            <Button 
+            <Button
               onClick={() => navigate('/pricing')}
               className="w-full h-14 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl shadow-xl uppercase tracking-widest gap-2"
             >
               Request Clearance <Rocket className="w-5 h-5" />
             </Button>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={() => setShowUpgradeModal(false)}
               className="w-full h-12 text-slate-500 hover:text-white uppercase font-black text-[10px]"
             >

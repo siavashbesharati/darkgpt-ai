@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from '@/components/ui/badge';
 import { useStore } from '@/lib/store';
+import { useShallow } from 'zustand/react/shallow';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { format } from 'date-fns';
 import { ShieldCheck, Info, Users, LayoutDashboard, Settings2, BarChart3, TrendingUp, Package, Library } from 'lucide-react';
@@ -26,7 +27,7 @@ const chartData = [
   { name: 'Sun', rev: 1200 },
 ];
 export function AdminDashboard() {
-  const transactions = useStore((s) => s.transactions);
+  const transactions = useStore(useShallow(s => s.transactions));
   const { isDark } = useTheme();
   const themePrimary = isDark ? "#ffffff" : "#0f172a";
   const themeGrid = isDark ? "#1e293b" : "#e2e8f0";

@@ -2,7 +2,7 @@ import React from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SupportButton } from "@/components/SupportButton";
-import { cn } from "@/utils";
+import { cn } from "@/lib/utils";
 import { useStore } from '@/lib/store';
 type AppLayoutProps = {
   children: React.ReactNode;

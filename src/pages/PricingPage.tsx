@@ -5,10 +5,11 @@ import { Check, Zap, Rocket, Star, Shield, Network, Loader2, Lock, Terminal } fr
 import { CryptoPaymentModal } from '@/components/crypto/CryptoPaymentModal';
 import { motion } from 'framer-motion';
 import { useStore } from '@/lib/store';
+import { useShallow } from 'zustand/react/shallow';
 export function PricingPage() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [selectedCredits, setSelectedCredits] = useState<number>(0);
-  const packages = useStore(s => s.packages);
+  const packages = useStore(useShallow(s => s.packages));
   const fetchPackages = useStore(s => s.fetchPackages);
   const [loading, setLoading] = useState(packages.length === 0);
   useEffect(() => {
@@ -51,7 +52,6 @@ export function PricingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
             {packages.map((pkg, i) => {
               const Icon = getIcon(pkg.name);
-              // Override feature lists for security focus if they match defaults
               let displayFeatures = pkg.features;
               if (pkg.name === 'Free') displayFeatures = ['10 basic scans/day', 'Standard speed', 'Community intelligence', 'Public audit log'];
               if (pkg.name === 'Pro') displayFeatures = ['1,000 Power units', 'Advanced Exploitation Tools', 'Private Security Audits', 'Fast DarkCore Access', '24/7 Priority Tunnel'];
